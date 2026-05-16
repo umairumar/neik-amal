@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Neik-Amal · نیک عمل</title>
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        card: 'hsl(var(--card))',
+        muted: 'hsl(var(--muted))',
+        'muted-foreground': 'hsl(var(--muted-foreground))',
+        primary: 'hsl(var(--primary))',
+      }
+    }
+  }
+}
+</script>
+<style>
+  :root {
+    --background: 60 20% 97%;
+    --foreground: 140 30% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 140 30% 8%;
+    --muted: 60 15% 92%;
+    --muted-foreground: 140 10% 45%;
+    --border: 60 15% 88%;
+    --primary: 141 72% 25%;
+    --radius: 0.75rem;
+  }
+  .dark {
+    --background: 220 15% 7%;
+    --foreground: 60 10% 95%;
+    --card: 220 15% 10%;
+    --card-foreground: 60 10% 95%;
+    --muted: 220 12% 14%;
+    --muted-foreground: 220 8% 55%;
+    --border: 220 12% 18%;
+    --primary: 141 60% 45%;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: hsl(var(--background)); color: hsl(var(--foreground)); -webkit-font-smoothing: antialiased; }
+  #root { min-height: 100svh; display: flex; flex-direction: column; }
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }
+
+  .geo-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%2316a34a' stroke-width='0.6' opacity='0.08'%3E%3Cpolygon points='30,5 55,20 55,40 30,55 5,40 5,20'/%3E%3Cpolygon points='30,16 44,23 44,37 30,44 16,37 16,23'/%3E%3Cline x1='30' y1='5' x2='30' y2='16'/%3E%3Cline x1='55' y1='20' x2='44' y2='23'/%3E%3Cline x1='55' y1='40' x2='44' y2='37'/%3E%3Cline x1='30' y1='55' x2='30' y2='44'/%3E%3Cline x1='5' y1='40' x2='16' y2='37'/%3E%3Cline x1='5' y1='20' x2='16' y2='23'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+  .shimmer { background: linear-gradient(90deg,#f59e0b,#fbbf24,#10b981,#f59e0b); background-size:300% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 4s linear infinite; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .fade-up { animation: fadeUp 0.4s ease-out forwards; }
+
+  @keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(249,168,37,.6)} 70%{box-shadow:0 0 0 8px rgba(249,168,37,0)} 100%{box-shadow:0 0 0 0 rgba(249,168,37,0)} }
+  .streak-pulse { animation: pulse-ring 2s ease-out infinite; }
+
+  @keyframes celebrate { 0%{transform:scale(0) rotate(-10deg);opacity:0} 70%{transform:scale(1.05) rotate(2deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+  .celebrate { animation: celebrate 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+  @keyframes checkPop { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  .check-pop { animation: checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+  @keyframes confBurst {
+    0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}
+    100%{transform:translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(0);opacity:0}
+  }
+  .conf-p { position:fixed; width:8px; height:8px; border-radius:2px; animation:confBurst 1.2s ease-out forwards; pointer-events:none; z-index:9999; }
+
+  .ring-anim { transition: stroke-dashoffset 1.3s cubic-bezier(0.4,0,0.2,1); }
+
+  .task-card { transition: all 0.25s ease; }
+  .task-card:hover { transform: translateX(2px); }
+  .task-done-card { background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.2); box-shadow: 0 2px 12px rgba(34,197,94,0.08); }
+
+  .nav-btn { transition: all 0.2s ease; }
+  .nav-btn.active svg { filter: drop-shadow(0 0 5px rgba(34,197,94,0.7)); }
+
+  .badge-glow { box-shadow: 0 4px 20px rgba(251,191,36,0.3); }
+  .badge-locked { opacity: 0.4; filter: grayscale(0.8); }
+
+  @keyframes starPop { 0%{transform:scale(0) rotate(-30deg)} 70%{transform:scale(1.2) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
+  .star-pop { animation: starPop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+  .progress-bar-fill { transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+  .overlay { position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem; }
+  .modal { background:hsl(var(--card));border:1px solid rgba(34,197,94,0.3);border-radius:1rem;padding:1.5rem;text-align:center;max-width:280px;width:100%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const { createElement: h, useState, useEffect, useRef, useMemo, useCallback } = React;
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const DAILY_TASKS = [
+  {id:'d1',n:1,text:'Did you make at least one good intention before performing some permissible deeds?',icon:'🤲',group:'Intentions'},
+  {id:'d2',n:2,text:'Did you offer the five daily Salahs with Jama\'at (Congregation)?',icon:'🕌',group:'Salah'},
+  {id:'d3',n:3,text:'Did you give invitation to offer Salah in your home, market, or wherever you were before offering Salah yourself?',icon:'📢',group:'Salah'},
+  {id:'d4',n:4,text:'Did you recite or listen to Surah Al-Mulk in the night?',icon:'📖',group:'Quran'},
+  {id:'d5',n:5,text:'Did you recite Ayat-ul-Kursi, Surah Al-Ikhlaas and Tasbih-e-Fatimah رَضِیَ اللّٰهُ عَنْهَا at least once after offering the 5 Salahs?',icon:'📿',group:'Dhikr'},
+  {id:'d6',n:6,text:'Did you recite or listen to at least three verses of the Holy Quran with translation Kanz-ul-Iman? Or read/listen to at least two pages of Siraat-ul-Jinaan?',icon:'📖',group:'Quran'},
+  {id:'d7',n:7,text:'Did you read some Awraad of the Shajarah today?',icon:'📜',group:'Dhikr'},
+  {id:'d8',n:8,text:'Did you recite Salat upon the Holy Prophet ﷺ at least 313 times today?',icon:'☪️',group:'Dhikr'},
+  {id:'d9',n:9,text:'Did you save your eyes from sins today? (unlawful gazing, films & dramas, obscene images or videos, looking at Non-Mahram)',icon:'👁️',group:'Character'},
+  {id:'d10',n:10,text:'Did you save your ears from sins today? (backbiting, music, evil conversation, musical ringtones)',icon:'👂',group:'Character'},
+  {id:'d11',n:11,text:'Whilst walking or travelling, did you keep your gaze lowered and save yourself from useless gazing?',icon:'🚶',group:'Character'},
+  {id:'d12',n:12,text:'Did you read or listen to any book of A\'la Hadrat رَحْمَةُ اللّٰهِ عَلَيْه or Maktaba-tul-Madinah for at least 12 minutes?',icon:'📚',group:'Knowledge'},
+  {id:'d13',n:13,text:'Did you reply to Azaan and Iqamah leaving your conversation, phone call and all activities?',icon:'🔔',group:'Salah'},
+  {id:'d14',n:14,text:'When becoming angry with someone, did you cure your anger by staying quiet or speaking wisely?',icon:'😤',group:'Character'},
+  {id:'d15',n:15,text:'Did you fill in the boxes of the Pious deeds booklet today whilst reflecting upon your deeds?',icon:'📝',group:'Self-Accountability'},
+  {id:'d16',n:16,text:'Did you obey your Nigran in accordance to the principles issued by Markazi Majlis-e-Shura?',icon:'🤝',group:'Organisational'},
+  {id:'d17',n:17,text:'Did you speak politely at home and outside with every young and elderly person? (Keep smiling where appropriate)',icon:'😊',group:'Character'},
+  {id:'d18',n:18,text:'Have you taught or learned the Holy Quran in Madrasa-tul-Madinah (Baalighan) today?',icon:'🏫',group:'Knowledge'},
+  {id:'d19',n:19,text:'Did you try to sleep within two hours of the Jama\'at of Isha Salah?',icon:'🌙',group:'Sunnah'},
+  {id:'d20',n:20,text:'Did you spend at least 2 hours on the Madani works of Dawat-e-Islami in accordance to the schedule provided by your Nigran?',icon:'⏰',group:'Organisational'},
+  {id:'d21',n:21,text:'Did you call out Sada-e-Madinah today? (Waking up Muslims for Fajr Salah)',icon:'🌅',group:'Dawah'},
+  {id:'d22',n:22,text:'Did you refrain from peeping unnecessarily outside from the windows of your home or peeping inside others\' homes?',icon:'🏠',group:'Character'},
+  {id:'d23',n:23,text:'Was Home Dars delivered at your home today? Or in your absence, was home Dars delivered at your home?',icon:'🏡',group:'Dawah'},
+  {id:'d24',n:24,text:'Did you deliver or listen to at least one Madani Dars (in the Masjid, shop, market area etc.)?',icon:'🎙️',group:'Dawah'},
+  {id:'d25',n:25,text:'Did you wear clothes according to Sunnah? (not of ladies colour, not shiny, not forbidden by Shari\'ah)',icon:'👕',group:'Sunnah'},
+  {id:'d26',n:26,text:'Are you abiding by the Sunnah of keeping your hair according to the Sunnah?',icon:'💇',group:'Sunnah'},
+  {id:'d27',n:27,text:'Keeping a fistful beard is Wajib. Did you refrain from the sin of shaving off your beard or trimming it less than a fistful?',icon:'🧔',group:'Sunnah'},
+  {id:'d28',n:28,text:'In case of committing a sin, did you repent immediately? (May we recite Istighfar اَسْتَغْفِرُ الله at least 70 times every day)',icon:'🙏',group:'Tawbah'},
+  {id:'d29',n:29,text:'Did you eat according to Sunnah and read the Du\'as of before and after eating?',icon:'🍽️',group:'Sunnah'},
+  {id:'d30',n:30,text:'Whilst going to or returning from work, did you give Salaam to the Muslims who were sitting or standing on the way?',icon:'🤲',group:'Character'},
+  {id:'d31',n:31,text:'Did you act upon the following Sunnahs today? Miswak, coming and going in the house, sleeping, waking up, sitting facing the Qiblah etc.',icon:'✨',group:'Sunnah'},
+  {id:'d32',n:32,text:'Did you offer the four preceding Sunnahs of Zuhr before the Faraaid?',icon:'🕌',group:'Salah'},
+  {id:'d33',n:33,text:'Did you offer Tahajjud Salah? Or in case of not sleeping at night, did you offer Salat-ul-Layl?',icon:'🌃',group:'Salah'},
+  {id:'d34',n:34,text:'Did you offer the voluntary Salah of Awwabeen or Ishraq and Chasht?',icon:'☀️',group:'Salah'},
+  {id:'d35',n:35,text:'Did you offer the preceding Sunnahs of \'Asr or \'Isha Salah?',icon:'🕌',group:'Salah'},
+  {id:'d36',n:36,text:'Did you persuade for at least one Madani activity out of the 12 Madani activities through individual effort?',icon:'📣',group:'Dawah'},
+  {id:'d37',n:37,text:'Did you avoid using things by asking others (e.g. slippers, shawl, mobile phone, charger, car)? Remove this habit if you have it.',icon:'🛑',group:'Character'},
+  {id:'d38',n:38,text:'Did you refrain from lying, backbiting and tale-telling, and also refrain from listening to it?',icon:'🤐',group:'Character'},
+  {id:'d39',n:39,text:'Did you watch \'Madani channel\' for some time today?',icon:'📺',group:'Knowledge'},
+  {id:'d40',n:40,text:'Did you refrain from having any personal friendship that becomes an obstacle in organisational works?',icon:'👥',group:'Organisational'},
+  {id:'d41',n:41,text:'Did you avoid delay in paying back debt to the creditor? Did you return borrowed things within the stipulated time?',icon:'💰',group:'Character'},
+  {id:'d42',n:42,text:'Did you refrain from committing the sin of hypocrisy and showing-off by uttering words of false humility?',icon:'🎭',group:'Character'},
+  {id:'d43',n:43,text:'Are you used to cleanliness and good decorum? (body, clothes, house, workplace clean; punctual; putting things back in place)',icon:'🧹',group:'Character'},
+  {id:'d44',n:44,text:'In case a Muslim\'s shortcoming was revealed to you, did you refrain from exposing it to someone else (without a Shar\'i reason)?',icon:'🤫',group:'Character'},
+  {id:'d45',n:45,text:'Did you conduct or attend the After Fajr Madani Halqah today?',icon:'🌄',group:'Dawah'},
+  {id:'d46',n:46,text:'Did you recite بِسْمِ اللّٰه before every permissible and reverential task? (Accepted if recited at least three times)',icon:'📿',group:'Dhikr'},
+  {id:'d47',n:47,text:'Did you deliver or listen to a Chowk Dars today?',icon:'🎙️',group:'Dawah'},
+  {id:'d48',n:48,text:'Did you supplicate for the forgiveness of your parents and Peer-o-Murshid, and make some Isal-e-Sawab for them?',icon:'🙏',group:'Dhikr'},
+  {id:'d49',n:49,text:'Did you try to refrain from Israaf in the Masjid, home, and office? (using lights, fans, electricity, water without need)',icon:'💧',group:'Character'},
+  {id:'d50',n:50,text:'Did you abide by the traffic rules today? (helmet, no phone while driving, seat belt, traffic signals, no wrong direction)',icon:'🚦',group:'Character'},
+  {id:'d51',n:51,text:'If an Islamic brother committed a wrongdoing, did you try to reform him politely? Or did you avoid the major sin of backbiting?',icon:'🤝',group:'Character'},
+  {id:'d52',n:52,text:'Did you save your tongue from sins today? (accusing others, hurting feelings, swearing)',icon:'👅',group:'Character'},
+  {id:'d53',n:53,text:'Did you converse somewhat through gestures to inculcate the habit of saving your tongue from useless conversation?',icon:'🤟',group:'Character'},
+  {id:'d54',n:54,text:'Did you refrain from joking, taunting, hurting the feelings of others and laughing out loud (at home and outside)?',icon:'😇',group:'Character'},
+  {id:'d55',n:55,text:'Did you wear the blessed \'Imamah today? (Accepted if worn for at least one hour and twelve minutes)',icon:'🎩',group:'Sunnah'},
+  {id:'d56',n:56,text:'Did you respect and revere your parents today? (Listening to them, kissing their hands, keeping your voice lower than theirs)',icon:'❤️',group:'Character'},
+];
+
+const WEEKLY_TASKS = DAILY_TASKS.slice(0,12).map(t=>({...t,id:'w'+t.id.slice(1)}));
+
+const MONTHLY_TASKS = [
+  {id:'m66',n:66,text:'Did you fill in last month\'s Pious deeds booklet and submit it to your Nigran and Responsible Islamic brother?',icon:'📋',group:'Self-Accountability'},
+  {id:'m67',n:67,text:'Did you travel in at least a 3-day Madani Qafilah this month?',icon:'🚌',group:'Organisational'},
+  {id:'m68',n:68,text:'Did you give a monetary gift to a Sunni scholar (or Imam/Muazzin/caretaker of a Masjid) this month?',icon:'💝',group:'Charity'},
+  {id:'m69',n:69,text:'Have you performed Qufl-e-Madinah for 25 hours on the first Monday of this month or Qufl-e-Madinah-Day for 72 hours?',icon:'🔇',group:'Character'},
+];
+
+const LIFETIME_TASKS = [
+  {id:'l71',n:71,text:'Have you read the lifetime reading syllabus? (Minhaj-ul-Aabideen, Jaa\'a-ul-Haq, Bahar-e-Shari\'at, Tamheed-ul-Iman, Hussam-ul-Haramayn, Faizan-e-Sunnat and all required Maktaba-tul-Madinah books)',icon:'📚',group:'Knowledge'},
+  {id:'l72',n:72,text:'Did you do a continuous 12 months Madani Qafilah and different courses (12 Madani works course, 7-day Islah-e-A\'maal course, 7-day Salah course) once in your lifetime?',icon:'🏆',group:'Organisational'},
+];
+
+const MOTIVATIONAL = [
+  {text:'Every good deed is a step closer to Allah ﷻ',ar:'كُلُّ عَمَلٍ صَالِحٍ خُطْوَةٌ نَحْوَ اللهِ'},
+  {text:"The Prophet ﷺ said: 'The best of people are those who are most beneficial to others'",ar:'خَيْرُ النَّاسِ أَنْفَعُهُمْ لِلنَّاسِ'},
+  {text:'A moment of reflection is worth a thousand moments of neglect',ar:'لَحْظَةُ تَأَمُّلٍ خَيْرٌ مِنْ أَلْفِ لَحْظَةٍ'},
+  {text:'Your deeds are your legacy — make them beautiful',ar:'أَعْمَالُكَ إِرْثُكَ، فَأَحْسِنْهَا'},
+  {text:'Small consistent actions build great character',ar:'الأَعْمَالُ الصَّغِيرَةُ المُتَوَاصِلَةُ تَبْنِي العَظِيمَ'},
+  {text:'Every Salah is a conversation with your Creator ﷻ',ar:'كُلُّ صَلَاةٍ مُحَادَثَةٌ مَعَ خَالِقِكَ'},
+  {text:'The tongue that remembers Allah ﷻ is never alone',ar:'اللِّسَانُ الذَّاكِرُ لِلَّهِ لَا يَوْحَشُ'},
+  {text:'Be the change that brings light to those around you',ar:'كُنْ التَّغْيِيرَ الَّذِي يُضِيءُ'},
+  {text:'Patience is the companion of wisdom',ar:'الصَّبْرُ رَفِيقُ الحِكْمَةِ'},
+  {text:'The heart that serves Allah ﷻ finds peace in all circumstances',ar:'القَلْبُ الخَادِمُ لِلَّهِ يَجِدُ السَّلَامَ'},
+  {text:'Seek forgiveness often — it opens the doors of mercy',ar:'أَكْثِرْ مِنَ الاسْتِغْفَارِ يَفْتَحُ أَبْوَابَ الرَّحْمَةِ'},
+  {text:'The reward for good deeds never diminishes — keep striving',ar:'ثَوَابُ الأَعْمَالِ الصَّالِحَةِ لَا يَنْقُصُ'},
+];
+
+const BADGES = [
+  {id:'first',name:'First Step',desc:'Complete your first task',icon:'🌱',color:'#43A047',type:'special',req:1},
+  {id:'streak7',name:'Week Warrior',desc:'7-day streak',icon:'🥉',color:'#cd7f32',type:'streak',req:7},
+  {id:'streak30',name:'Month Master',desc:'30-day streak',icon:'🥈',color:'#C0C0C0',type:'streak',req:30},
+  {id:'streak90',name:'Quarter Champion',desc:'90-day streak',icon:'🥇',color:'#FFD700',type:'streak',req:90},
+  {id:'streak365',name:'Year of Piety',desc:'365-day streak',icon:'💎',color:'#b9f2ff',type:'streak',req:365},
+  {id:'daily_all',name:'Pious Day',desc:'Complete all 56 daily tasks',icon:'⭐',color:'#F9A825',type:'completion',req:56},
+  {id:'weekly_all',name:'Weekly Champion',desc:'All 12 weekly goals met',icon:'🏆',color:'#FFD700',type:'completion',req:12},
+  {id:'monthly_all',name:'Monthly Devotee',desc:'All 4 monthly tasks done',icon:'🌟',color:'#4CAF50',type:'completion',req:4},
+  {id:'perfect_week',name:'Perfect Week',desc:'All tasks done 7 days in a row',icon:'🌈',color:'#7B1FA2',type:'special',req:7},
+  {id:'scholar',name:'Scholar',desc:'Complete lifetime reading',icon:'📜',color:'#E65100',type:'special',req:1},
+  {id:'salah_m',name:'Salah Master',desc:'All Salah tasks for 7 days',icon:'🕌',color:'#1B5E20',type:'category',req:7},
+  {id:'quran_r',name:'Quran Reader',desc:'All Quran tasks for 7 days',icon:'📖',color:'#1565C0',type:'category',req:7},
+];
+
+// ─── STATE MANAGEMENT ───────────────────────────────────────────────────────
+const TODAY = new Date().toISOString().split('T')[0];
+const THIS_MONTH = `${new Date().getFullYear()}-${new Date().getMonth()}`;
+
+function getWeekKey() {
+  const d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate()-d.getDay());
+  return d.toISOString().split('T')[0];
+}
+
+function calcStreak(hist) {
+  if(!hist.length) return 0;
+  const sorted=[...new Set(hist)].sort().reverse();
+  let streak=0, cur=new Date(TODAY);
+  for(const dt of sorted){
+    const d=new Date(dt);
+    const diff=Math.round((cur-d)/(864e5));
+    if(diff<=1){streak++;cur=d;}else break;
+  }
+  return streak;
+}
+
+function loadState() {
+  try {
+    const raw=localStorage.getItem('neik-amal-v2');
+    const def={
+      daily:[],weekly:{},monthly:[],lifetime:[],
+      streak:0,streakHist:[],fullDayHist:[],
+      badges:[],notifs:[],theme:'dark',
+      lastDay:TODAY,lastWeek:getWeekKey(),lastMonth:THIS_MONTH,
+    };
+    if(!raw) return def;
+    const s=JSON.parse(raw);
+    if(s.lastDay!==TODAY){s.daily=[];s.lastDay=TODAY;}
+    if(s.lastWeek!==getWeekKey()){s.weekly={};s.lastWeek=getWeekKey();}
+    if(s.lastMonth!==THIS_MONTH){s.monthly=[];s.lastMonth=THIS_MONTH;}
+    s.streak=calcStreak(s.streakHist||[]);
+    return {...def,...s};
+  } catch{return{daily:[],weekly:{},monthly:[],lifetime:[],streak:0,streakHist:[],fullDayHist:[],badges:[],notifs:[],theme:'dark',lastDay:TODAY,lastWeek:getWeekKey(),lastMonth:THIS_MONTH};}
+}
+
+// ─── COMPONENTS ─────────────────────────────────────────────────────────────
+
+function Icon({name, size=18, style={}}) {
+  const ref = useRef(null);
+  useEffect(()=>{
+    if(ref.current && window.lucide){
+      ref.current.innerHTML='';
+      const svg = lucide[name] ? lucide.createIcons({nameAttr:'data-lucide'}) : null;
+      // fallback: create SVG manually via lucide
+      const iconData = lucide[name];
+      if(iconData){
+        const svgEl = document.createElementNS('http://www.w3.org/2000/svg','svg');
+        svgEl.setAttribute('width', size);
+        svgEl.setAttribute('height', size);
+        svgEl.setAttribute('viewBox','0 0 24 24');
+        svgEl.setAttribute('fill','none');
+        svgEl.setAttribute('stroke','currentColor');
+        svgEl.setAttribute('stroke-width','2');
+        svgEl.setAttribute('stroke-linecap','round');
+        svgEl.setAttribute('stroke-linejoin','round');
+        const [attrs, children] = iconData;
+        children.forEach(([tag, tagAttrs])=>{
+          const el = document.createElementNS('http://www.w3.org/2000/svg',tag);
+          Object.entries(tagAttrs||{}).forEach(([k,v])=>el.setAttribute(k,v));
+          svgEl.appendChild(el);
+        });
+        ref.current.appendChild(svgEl);
+      }
+    }
+  },[name,size]);
+  return h('span',{ref, style:{display:'inline-flex',alignItems:'center',...style}});
+}
+
+// Simple SVG icons inline to avoid dependency issues
+const icons = {
+  Home: ()=>h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:'m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'}),
+    h('polyline',{points:'9 22 9 12 15 12 15 22'})),
+  Sun: ()=>h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('circle',{cx:12,cy:12,r:4}),
+    h('line',{x1:12,y1:2,x2:12,y2:4}),h('line',{x1:12,y1:20,x2:12,y2:22}),
+    h('line',{x1:4.22,y1:4.22,x2:5.64,y2:5.64}),h('line',{x1:18.36,y1:18.36,x2:19.78,y2:19.78}),
+    h('line',{x1:2,y1:12,x2:4,y2:12}),h('line',{x1:20,y1:12,x2:22,y2:12}),
+    h('line',{x1:4.22,y1:19.78,x2:5.64,y2:18.36}),h('line',{x1:18.36,y1:5.64,x2:19.78,y2:4.22})),
+  BarChart: ()=>h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('line',{x1:18,y1:20,x2:18,y2:10}),h('line',{x1:12,y1:20,x2:12,y2:4}),h('line',{x1:6,y1:20,x2:6,y2:14}),h('line',{x1:2,y1:20,x2:22,y2:20})),
+  Trophy: ()=>h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:'M6 9H4.5a2.5 2.5 0 0 1 0-5H6'}),h('path',{d:'M18 9h1.5a2.5 2.5 0 0 0 0-5H18'}),
+    h('path',{d:'M4 22h16'}),h('path',{d:'M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22'}),
+    h('path',{d:'M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22'}),
+    h('path',{d:'M18 2H6v7a6 6 0 0 0 12 0V2Z'})),
+  Settings: ()=>h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('circle',{cx:12,cy:12,r:3}),
+    h('path',{d:'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z'})),
+  Check: ()=>h('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'white',strokeWidth:3.5,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('polyline',{points:'20 6 9 17 4 12'})),
+  Flame: ()=>h('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:'M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5Z'})),
+  Bell: ()=>h('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'}),h('path',{d:'M13.73 21a2 2 0 0 1-3.46 0'})),
+  BellOff: ()=>h('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:'m13.73 21a2 2 0 0 1-3.46 0'}),h('path',{d:'M18.63 13A17.89 17.89 0 0 1 18 8'}),
+    h('path',{d:'M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14'}),h('path',{d:'M18 8a6 6 0 0 0-9.33-5'}),
+    h('line',{x1:1,y1:1,x2:23,y2:23})),
+  Star: (props)=>h('svg',{width:props.size||18,height:props.size||18,viewBox:'0 0 24 24',fill:props.filled?'currentColor':'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('polygon',{points:'12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'})),
+  Search: ()=>h('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('circle',{cx:11,cy:11,r:8}),h('line',{x1:21,y1:21,x2:16.65,y2:16.65})),
+  Moon: ()=>h('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'})),
+  Lock: ()=>h('svg',{width:22,height:22,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('rect',{x:3,y:11,width:18,height:11,rx:2,ry:2}),h('path',{d:'M7 11V7a5 5 0 0 1 10 0v4'})),
+  Infinity: ()=>h('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+    h('path',{d:'M12 12c-2-2.5-4-4-6-4a4 4 0 0 0 0 8c2 0 4-1.5 6-4Z'}),
+    h('path',{d:'M12 12c2 2.5 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.5-6 4Z'})),
+};
+
+// ─── ACTIVITY RINGS ──────────────────────────────────────────────────────────
+function ActivityRings({daily,weekly,monthly}) {
+  const [anim, setAnim] = useState(false);
+  useEffect(()=>{const t=setTimeout(()=>setAnim(true),100);return()=>clearTimeout(t);},[]);
+
+  function ring(pct, r, color, track) {
+    const circ = 2*Math.PI*r;
+    const offset = anim ? circ - (pct/100)*circ : circ;
+    return h('g',{key:r},
+      h('circle',{cx:90,cy:90,r,fill:'none',stroke:track,strokeWidth:9}),
+      h('circle',{cx:90,cy:90,r,fill:'none',stroke:color,strokeWidth:9,
+        strokeLinecap:'round',strokeDasharray:circ,strokeDashoffset:offset,
+        style:{transformOrigin:'90px 90px',transform:'rotate(-90deg)',
+          transition:'stroke-dashoffset 1.3s cubic-bezier(0.4,0,0.2,1)',
+          filter:`drop-shadow(0 0 5px ${color}88)`}}));
+  }
+
+  return h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center'}},
+    h('svg',{width:180,height:180,viewBox:'0 0 180 180'},
+      ring(monthly,80,'#10b981','rgba(16,185,129,.12)'),
+      ring(weekly,63,'#f59e0b','rgba(245,158,11,.12)'),
+      ring(daily,46,'#22c55e','rgba(34,197,94,.12)'),
+      h('text',{x:90,y:84,textAnchor:'middle',fill:'#888',fontSize:10},  'Daily'),
+      h('text',{x:90,y:101,textAnchor:'middle',fill:'#22c55e',fontSize:22,fontWeight:'bold'},daily+'%')),
+    h('div',{style:{display:'flex',gap:16,marginTop:8}},
+      ...[['#22c55e','Daily'],['#f59e0b','Weekly'],['#10b981','Monthly']].map(([c,l])=>
+        h('div',{key:l,style:{display:'flex',alignItems:'center',gap:5}},
+          h('div',{style:{width:8,height:8,borderRadius:'50%',background:c,boxShadow:`0 0 5px ${c}88`}}),
+          h('span',{style:{fontSize:10,color:'#888'}},l)))));
+}
+
+// ─── TASK CARD ───────────────────────────────────────────────────────────────
+function TaskCard({task,done,notifOn,onToggle,onToggleNotif,showNotif,idx}) {
+  const [anim,setAnim]=useState(false);
+  const handleToggle=()=>{
+    if(!done){setAnim(true);setTimeout(()=>setAnim(false),400);}
+    onToggle(task.id);
+  };
+
+  return h('div',{
+    className:'task-card'+(done?' task-done-card':''),
+    style:{display:'flex',alignItems:'flex-start',gap:12,padding:'12px 14px',
+      borderRadius:12,border:'1px solid',borderColor:done?'rgba(34,197,94,.2)':'hsl(var(--border))',
+      background:done?'rgba(34,197,94,.06)':'hsl(var(--card))',
+      marginBottom:8,transform:anim?'scale(1.02)':'scale(1)',
+      transition:'all 0.25s ease',cursor:'pointer'},
+    onClick:handleToggle},
+    h('div',{style:{width:22,height:22,borderRadius:'50%',border:'2px solid',
+      borderColor:done?'#22c55e':'hsl(var(--border))',flexShrink:0,marginTop:2,
+      display:'flex',alignItems:'center',justifyContent:'center',
+      background:done?'#22c55e':'transparent',
+      boxShadow:done?'0 0 10px rgba(34,197,94,.4)':'none',
+      transition:'all 0.3s ease'}},
+      done&&h('span',{className:'check-pop'},h(icons.Check))),
+    h('div',{style:{flex:1,minWidth:0}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:2}},
+        h('span',{style:{fontSize:13}},task.icon),
+        h('span',{style:{fontSize:10,color:'#666',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em'}},task.group),
+        h('span',{style:{fontSize:10,color:'#555'}},'#'+task.n)),
+      h('p',{style:{fontSize:13,lineHeight:1.4,color:done?'#666':'hsl(var(--foreground))',
+        textDecoration:done?'line-through':'none',textDecorationColor:'rgba(34,197,94,.5)',
+        transition:'all 0.3s'}},task.text)),
+    showNotif&&h('button',{
+      onClick:e=>{e.stopPropagation();onToggleNotif(task.id);},
+      style:{flexShrink:0,padding:4,borderRadius:8,border:'none',cursor:'pointer',
+        background:notifOn?'rgba(245,158,11,.15)':'transparent',
+        color:notifOn?'#f59e0b':'#888'}},
+      notifOn?h(icons.Bell):h(icons.BellOff)));
+}
+
+// ─── HOME SCREEN ─────────────────────────────────────────────────────────────
+function HomeScreen({state,dailyPct,weeklyPct,monthlyPct,stars,dailyCount,weeklyCount}) {
+  const msg = useMemo(()=>{
+    const dy=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5);
+    return MOTIVATIONAL[dy%MOTIVATIONAL.length];
+  },[]);
+  const today=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const streak=state.streak;
+
+  return h('div',{style:{padding:'20px 16px',paddingBottom:90,overflowY:'auto'}},
+    // Header
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}},
+      h('div',{},
+        h('p',{style:{fontSize:11,color:'#888',fontWeight:600}},today),
+        h('h1',{style:{fontSize:26,fontWeight:800,margin:'2px 0 0'},className:'shimmer'},'نیک عمل'),
+        h('p',{style:{fontSize:12,color:'#888'}}, 'Neik-Amal · Pious Deeds')),
+      streak>0&&h('div',{className:'streak-pulse',style:{display:'flex',alignItems:'center',gap:6,
+        background:'rgba(249,168,37,.12)',border:'1px solid rgba(249,168,37,.35)',
+        borderRadius:20,padding:'6px 12px',color:'#f59e0b'}},
+        h(icons.Flame),
+        h('span',{style:{fontSize:14,fontWeight:700}},streak),
+        h('span',{style:{fontSize:11,color:'#d97706'}},'day streak'))),
+
+    // Rings card
+    h('div',{className:'geo-bg',style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',
+      borderRadius:20,padding:'20px 20px 16px',textAlign:'center',marginBottom:16}},
+      h('p',{style:{fontSize:10,fontWeight:700,color:'#888',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:12}},"Today's Activity"),
+      h(ActivityRings,{daily:dailyPct,weekly:weeklyPct,monthly:monthlyPct}),
+      h('div',{style:{display:'flex',justifyContent:'center',gap:4,marginTop:14}},
+        ...[1,2,3,4,5].map(s=>h('span',{key:s,className:s<=stars?'star-pop':'',
+          style:{fontSize:18,filter:s<=stars?'drop-shadow(0 0 4px #f59e0b88)':'none',
+            color:s<=stars?'#f59e0b':'#444',animationDelay:(s-1)*0.08+'s'}},s<=stars?'★':'☆'))),
+      h('p',{style:{fontSize:11,color:'#888',marginTop:4}},
+        stars===5?'Exceptional — MashAllah! 🌟':
+        stars===4?'Excellent work! Keep going':
+        stars===3?'Good progress, keep striving':
+        stars>=1?'Keep going! Every deed counts 🌱':
+        'Begin your pious journey today')),
+
+    // Stats
+    h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:16}},
+      ...[
+        {icon:'📅',val:`${dailyCount}/56`,lbl:'Today',c:'#22c55e'},
+        {icon:'📊',val:`${weeklyCount}/12`,lbl:'Weekly',c:'#f59e0b'},
+        {icon:'🏅',val:`${state.badges.length}`,lbl:'Badges',c:'#10b981'},
+      ].map(({icon,val,lbl,c})=>h('div',{key:lbl,style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',
+        borderRadius:14,padding:'12px 8px',textAlign:'center'}},
+        h('div',{style:{fontSize:16,marginBottom:2}},icon),
+        h('div',{style:{fontSize:16,fontWeight:800,color:c}},val),
+        h('div',{style:{fontSize:10,color:'#888'}},lbl)))),
+
+    // Quote
+    h('div',{style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',
+      borderRadius:18,padding:'16px',position:'relative',overflow:'hidden',marginBottom:16}},
+      h('div',{style:{position:'absolute',top:0,left:0,width:3,height:'100%',
+        background:'linear-gradient(to bottom,#22c55e,#10b981)',borderRadius:'12px 0 0 12px'}}),
+      h('div',{style:{paddingLeft:12}},
+        h('p',{style:{fontSize:10,fontWeight:700,color:'#22c55e',textTransform:'uppercase',
+          letterSpacing:'0.08em',marginBottom:8}},"Today's Reminder"),
+        h('p',{style:{fontSize:13,lineHeight:1.5,fontWeight:500}},msg.text),
+        h('p',{style:{fontSize:12,color:'#888',marginTop:8,textAlign:'right',fontFamily:'Georgia,serif',direction:'rtl'}},msg.ar))),
+
+    // Nudge / completion
+    dailyPct===100
+      ? h('div',{style:{background:'rgba(34,197,94,.1)',border:'1px solid rgba(34,197,94,.3)',
+          borderRadius:16,padding:'16px',textAlign:'center'}},
+          h('div',{style:{fontSize:32,marginBottom:4}},'🎉'),
+          h('p',{style:{fontWeight:700,color:'#22c55e',fontSize:14}},'All Daily Tasks Complete!'),
+          h('p',{style:{fontSize:12,color:'#888',marginTop:4}},'MashAllah! What a blessed day. جَزَاكَ اللّٰهُ خَيْرًا'))
+      : h('div',{style:{background:'rgba(34,197,94,.06)',border:'1px solid rgba(34,197,94,.15)',
+          borderRadius:14,padding:'14px',display:'flex',alignItems:'center',gap:12}},
+          h('div',{style:{width:36,height:36,borderRadius:'50%',background:'rgba(34,197,94,.15)',
+            display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:18}},'📈'),
+          h('div',{},
+            h('p',{style:{fontSize:13,fontWeight:600}},(56-dailyCount)+' task'+(56-dailyCount!==1?'s':'')+' remaining today'),
+            h('p',{style:{fontSize:11,color:'#888'}},
+              dailyPct>=50?'More than halfway there! 💪':'Every deed counts. Start now 🌱'))));
+}
+
+// ─── DAILY SCREEN ─────────────────────────────────────────────────────────────
+const GROUPS=['All','Salah','Quran','Dhikr','Character','Sunnah','Dawah','Knowledge','Organisational','Tawbah','Self-Accountability','Intentions'];
+
+function DailyScreen({state,onToggle,onToggleNotif}) {
+  const [search,setSearch]=useState('');
+  const [grp,setGrp]=useState('All');
+  const [pending,setPending]=useState(false);
+  const done=state.daily;
+  const filtered=DAILY_TASKS.filter(t=>{
+    const mg=grp==='All'||t.group===grp;
+    const ms=!search||t.text.toLowerCase().includes(search.toLowerCase());
+    const mp=!pending||!done.includes(t.id);
+    return mg&&ms&&mp;
+  });
+  const pct=Math.round((done.length/56)*100);
+
+  return h('div',{style:{display:'flex',flexDirection:'column',height:'100%',overflow:'hidden'}},
+    h('div',{style:{padding:'20px 16px 12px',position:'sticky',top:0,zIndex:10,
+      background:'hsl(var(--background))',borderBottom:'1px solid hsl(var(--border))'}},
+      h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}},
+        h('div',{},
+          h('h2',{style:{fontSize:18,fontWeight:700}},'Daily Deeds'),
+          h('p',{style:{fontSize:11,color:'#888'}},done.length+' of 56 completed')),
+        h('span',{style:{fontSize:24,fontWeight:800,color:'#22c55e'}},pct+'%')),
+      h('div',{style:{height:5,background:'hsl(var(--muted))',borderRadius:3,overflow:'hidden',marginBottom:10}},
+        h('div',{style:{height:'100%',borderRadius:3,width:pct+'%',
+          background:'linear-gradient(90deg,#22c55e,#10b981)',
+          boxShadow:'0 0 8px rgba(34,197,94,.5)',transition:'width 0.8s ease'}})),
+      h('div',{style:{position:'relative',marginBottom:10}},
+        h('span',{style:{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'#888'}},h(icons.Search)),
+        h('input',{value:search,onChange:e=>setSearch(e.target.value),placeholder:'Search tasks...',
+          style:{width:'100%',paddingLeft:32,paddingRight:12,paddingTop:8,paddingBottom:8,
+            fontSize:13,background:'hsl(var(--muted))',border:'1px solid hsl(var(--border))',
+            borderRadius:10,outline:'none',color:'hsl(var(--foreground))'}})),
+      h('div',{style:{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}},
+        h('button',{onClick:()=>setPending(!pending),
+          style:{flexShrink:0,padding:'4px 10px',borderRadius:20,border:'1px solid',fontSize:11,fontWeight:600,cursor:'pointer',
+            borderColor:pending?'rgba(245,158,11,.4)':'hsl(var(--border))',
+            background:pending?'rgba(245,158,11,.12)':'transparent',
+            color:pending?'#f59e0b':'#888'}},'Pending'),
+        ...GROUPS.slice(0,8).map(g=>h('button',{key:g,onClick:()=>setGrp(g),
+          style:{flexShrink:0,padding:'4px 10px',borderRadius:20,border:'1px solid',fontSize:11,fontWeight:600,cursor:'pointer',
+            borderColor:grp===g?'rgba(34,197,94,.4)':'hsl(var(--border))',
+            background:grp===g?'rgba(34,197,94,.12)':'transparent',
+            color:grp===g?'#22c55e':'#888'}},g)))),
+    h('div',{style:{flex:1,overflowY:'auto',padding:'12px 16px',paddingBottom:90}},
+      filtered.length===0
+        ? h('div',{style:{textAlign:'center',padding:'60px 0',color:'#888'}},
+            h('div',{style:{fontSize:40,marginBottom:8}},'✅'),
+            h('p',{style:{fontSize:13}},pending?'All tasks in this category complete! 🎉':'No tasks found'))
+        : filtered.map((t,i)=>h(TaskCard,{key:t.id,task:t,done:done.includes(t.id),
+            notifOn:state.notifs.includes(t.id),onToggle,onToggleNotif,showNotif:true,idx:i}))));
+}
+
+// ─── PROGRESS SCREEN ──────────────────────────────────────────────────────────
+function ProgressScreen({state,onToggleMonthly,onToggleLifetime}) {
+  return h('div',{style:{padding:'20px 16px',paddingBottom:90,overflowY:'auto'}},
+    // Weekly
+    h('div',{style:{marginBottom:24}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:12}},
+        h('div',{style:{width:30,height:30,borderRadius:'50%',background:'rgba(245,158,11,.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}},'⏳'),
+        h('div',{},h('h3',{style:{fontSize:14,fontWeight:700}},'Weekly Goals'),
+          h('p',{style:{fontSize:11,color:'#888'}},WEEKLY_TASKS.filter(t=>(state.weekly[t.id]||0)>=5).length+'/12 tasks passing (5+ days)'))),
+      h('div',{},WEEKLY_TASKS.map(t=>{
+        const cnt=state.weekly[t.id]||0, passed=cnt>=5;
+        return h('div',{key:t.id,style:{borderRadius:14,border:'1px solid',
+          borderColor:passed?'rgba(245,158,11,.25)':'hsl(var(--border))',
+          background:passed?'rgba(245,158,11,.07)':'hsl(var(--card))',
+          padding:'12px 14px',marginBottom:8}},
+          h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}},
+            h('div',{style:{flex:1}},
+              h('div',{style:{display:'flex',gap:6,alignItems:'center',marginBottom:3}},
+                h('span',null,t.icon),
+                h('span',{style:{fontSize:10,color:'#888',textTransform:'uppercase',fontWeight:600}},t.group),
+                passed&&h('span',{style:{fontSize:9,background:'rgba(245,158,11,.2)',color:'#f59e0b',padding:'1px 6px',borderRadius:10,fontWeight:700}},'PASSED ✓')),
+              h('p',{style:{fontSize:12,lineHeight:1.4}},t.text)),
+            h('span',{style:{fontSize:13,fontWeight:700,color:passed?'#f59e0b':'#888',marginLeft:8}},cnt+'/7')),
+          h('div',{style:{display:'flex',gap:3}},
+            ...[0,1,2,3,4,5,6].map(i=>h('div',{key:i,style:{flex:1,height:5,borderRadius:3,
+              background:i<cnt?(i<5?'#f59e0b':'#22c55e'):'hsl(var(--muted))',transition:'background 0.4s'}}))),
+          h('p',{style:{fontSize:10,color:'#888',marginTop:4}},
+            passed?'Goal met for this week!':`Need ${Math.max(0,5-cnt)} more day${5-cnt!==1?'s':''} to pass`));
+      }))),
+
+    // Monthly
+    h('div',{style:{marginBottom:24}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:12}},
+        h('div',{style:{width:30,height:30,borderRadius:'50%',background:'rgba(16,185,129,.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}},'📅'),
+        h('div',{},h('h3',{style:{fontSize:14,fontWeight:700}},'Monthly Tasks'),
+          h('p',{style:{fontSize:11,color:'#888'}},state.monthly.length+'/4 completed'))),
+      h('div',{},MONTHLY_TASKS.map(t=>{
+        const done=state.monthly.includes(t.id);
+        return h('div',{key:t.id,onClick:()=>onToggleMonthly(t.id),
+          style:{borderRadius:14,border:'1px solid',cursor:'pointer',
+            borderColor:done?'rgba(16,185,129,.25)':'hsl(var(--border))',
+            background:done?'rgba(16,185,129,.07)':'hsl(var(--card))',
+            padding:'12px 14px',marginBottom:8,display:'flex',gap:12,alignItems:'flex-start',transition:'all 0.25s'}},
+          h('div',{style:{width:22,height:22,borderRadius:'50%',border:'2px solid',flexShrink:0,marginTop:2,
+            borderColor:done?'#10b981':'hsl(var(--border))',background:done?'#10b981':'transparent',
+            display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.3s'}},
+            done&&h(icons.Check)),
+          h('div',{},
+            h('div',{style:{display:'flex',gap:6,alignItems:'center',marginBottom:3}},
+              h('span',null,t.icon),h('span',{style:{fontSize:10,color:'#888',textTransform:'uppercase',fontWeight:600}},t.group)),
+            h('p',{style:{fontSize:13,lineHeight:1.4,textDecoration:done?'line-through':'none',color:done?'#888':'hsl(var(--foreground))'}},t.text)));
+      }))),
+
+    // Lifetime
+    h('div',{},
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:12}},
+        h('div',{style:{width:30,height:30,borderRadius:'50%',background:'rgba(139,92,246,.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}},'♾️'),
+        h('div',{},h('h3',{style:{fontSize:14,fontWeight:700}},'Lifetime Goals'),
+          h('p',{style:{fontSize:11,color:'#888'}},state.lifetime.length+'/2 achieved'))),
+      h('div',{},LIFETIME_TASKS.map(t=>{
+        const done=state.lifetime.includes(t.id);
+        return h('div',{key:t.id,onClick:()=>onToggleLifetime(t.id),
+          style:{borderRadius:16,border:'1px solid',cursor:'pointer',
+            borderColor:done?'rgba(139,92,246,.3)':'hsl(var(--border))',
+            background:done?'rgba(139,92,246,.07)':'hsl(var(--card))',
+            padding:'16px',marginBottom:8,display:'flex',gap:12,alignItems:'flex-start',transition:'all 0.25s'}},
+          h('div',{style:{width:24,height:24,borderRadius:'50%',border:'2px solid',flexShrink:0,marginTop:2,
+            borderColor:done?'#8b5cf6':'hsl(var(--border))',background:done?'#8b5cf6':'transparent',
+            display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.3s'}},
+            done&&h(icons.Check)),
+          h('div',{style:{flex:1}},
+            h('div',{style:{display:'flex',gap:8,alignItems:'center',marginBottom:4}},
+              h('span',{style:{fontSize:20}},t.icon),
+              done&&h('span',{style:{fontSize:9,background:'rgba(139,92,246,.2)',color:'#8b5cf6',padding:'1px 6px',borderRadius:10,fontWeight:700}},'ACHIEVED ✓')),
+            h('p',{style:{fontSize:13,lineHeight:1.5,color:done?'#888':'hsl(var(--foreground))'}},t.text)));
+      }))));
+}
+
+// ─── AWARDS SCREEN ───────────────────────────────────────────────────────────
+function AwardsScreen({state}) {
+  const earned=state.badges;
+  const total=BADGES.length;
+  const pct=Math.round((earned.length/total)*100);
+
+  const byType={streak:[],completion:[],category:[],special:[]};
+  BADGES.forEach(b=>byType[b.type].push(b));
+
+  return h('div',{style:{padding:'20px 16px',paddingBottom:90,overflowY:'auto'}},
+    h('div',{className:'geo-bg',style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',
+      borderRadius:20,padding:'20px',textAlign:'center',marginBottom:20}},
+      h('div',{style:{fontSize:44,marginBottom:8}},'🏆'),
+      h('h2',{style:{fontSize:18,fontWeight:700,marginBottom:4}},'Trophy Room'),
+      h('p',{style:{fontSize:13,color:'#888'}},
+        h('span',{style:{color:'#f59e0b',fontWeight:700}},earned.length),' of ',total,' badges earned'),
+      h('div',{style:{height:8,background:'hsl(var(--muted))',borderRadius:4,overflow:'hidden',margin:'12px 16px 0'}},
+        h('div',{style:{height:'100%',borderRadius:4,width:pct+'%',
+          background:'linear-gradient(90deg,#f59e0b,#fbbf24)',
+          boxShadow:'0 0 8px rgba(245,158,11,.5)',transition:'width 1s ease'}}))),
+
+    ...[['🔥 Streak Awards','streak'],['🌟 Completion','completion'],['🎯 Category','category'],['✨ Special','special']]
+      .map(([label,type])=>h('div',{key:type,style:{marginBottom:24}},
+        h('h3',{style:{fontSize:13,fontWeight:700,marginBottom:10}},label),
+        h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}},
+          ...byType[type].map(badge=>{
+            const isEarned=earned.includes(badge.id);
+            return h('div',{key:badge.id,className:isEarned?'badge-glow badge-appear':'badge-locked',
+              style:{display:'flex',flexDirection:'column',alignItems:'center',gap:8,padding:'16px 12px',
+                borderRadius:18,border:'1px solid',
+                borderColor:isEarned?badge.color+'55':'hsl(var(--border))',
+                background:'hsl(var(--card))',transition:'all 0.4s'}},
+              h('div',{style:{fontSize:32,filter:isEarned?`drop-shadow(0 0 8px ${badge.color}99)`:'none'}},
+                isEarned?badge.icon:h(icons.Lock)),
+              h('div',{style:{textAlign:'center'}},
+                h('p',{style:{fontSize:11,fontWeight:700,color:isEarned?'hsl(var(--foreground))':'#666'}},badge.name),
+                h('p',{style:{fontSize:10,color:'#888',marginTop:2}},badge.desc)),
+              isEarned&&h('div',{style:{fontSize:9,fontWeight:700,padding:'2px 8px',borderRadius:10,color:'white',background:badge.color}},'Earned ✓'));
+          })))),
+
+    // Next to unlock
+    h('div',{style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',
+      borderRadius:14,padding:'14px',marginTop:4}},
+      h('p',{style:{fontSize:10,fontWeight:700,color:'#888',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:8}},'Next to Unlock'),
+      !earned.includes('streak7')&&state.streak>0
+        &&h('div',{style:{fontSize:12,color:'hsl(var(--foreground))',marginBottom:4,display:'flex',gap:6}},
+          h('span',null,'🥉'),h('span',null,'Week Warrior — '+(7-state.streak)+' more streak day'+(7-state.streak!==1?'s':''))),
+      !earned.includes('daily_all')
+        &&h('div',{style:{fontSize:12,color:'hsl(var(--foreground))',marginBottom:4,display:'flex',gap:6}},
+          h('span',null,'⭐'),h('span',null,'Pious Day — Complete all 56 tasks in one day')),
+      !earned.includes('monthly_all')
+        &&h('div',{style:{fontSize:12,color:'hsl(var(--foreground))',marginBottom:4,display:'flex',gap:6}},
+          h('span',null,'🌟'),h('span',null,'Monthly Devotee — Complete all 4 monthly tasks')),
+      earned.length===total&&h('p',{style:{fontSize:13,fontWeight:700,color:'#f59e0b',textAlign:'center'}},'MashAllah! All badges earned! 🌟')));
+}
+
+// ─── SETTINGS SCREEN ─────────────────────────────────────────────────────────
+function SettingsScreen({state,onToggleTheme,onToggleNotif}) {
+  const byGroup={};
+  DAILY_TASKS.forEach(t=>{if(!byGroup[t.group])byGroup[t.group]=[];byGroup[t.group].push(t);});
+
+  const toggleGroup=(grp)=>{
+    const tasks=byGroup[grp];
+    const allOn=tasks.every(t=>state.notifs.includes(t.id));
+    tasks.forEach(t=>{
+      const isOn=state.notifs.includes(t.id);
+      if(allOn?isOn:!isOn) onToggleNotif(t.id);
+    });
+  };
+
+  return h('div',{style:{padding:'20px 16px',paddingBottom:90,overflowY:'auto'}},
+    h('h2',{style:{fontSize:18,fontWeight:700,marginBottom:16}},'Settings'),
+
+    // Theme
+    h('p',{style:{fontSize:10,fontWeight:700,color:'#888',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}},'Appearance'),
+    h('div',{style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',borderRadius:14,marginBottom:20}},
+      h('button',{onClick:onToggleTheme,
+        style:{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',
+          padding:'14px 16px',background:'transparent',border:'none',cursor:'pointer',color:'hsl(var(--foreground))'}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:10}},
+          h('span',{style:{fontSize:14}},state.theme==='dark'?'🌙':'☀️'),
+          h('span',{style:{fontSize:13,fontWeight:600}},state.theme==='dark'?'Dark Mode':'Light Mode')),
+        h('div',{style:{width:44,height:24,borderRadius:12,background:state.theme==='dark'?'#3b82f6':'#f59e0b',
+          position:'relative',transition:'background 0.3s'}},
+          h('div',{style:{position:'absolute',top:3,width:18,height:18,background:'white',borderRadius:'50%',
+            left:state.theme==='dark'?22:3,transition:'left 0.3s',boxShadow:'0 1px 4px rgba(0,0,0,.3)'}})
+        ))),
+
+    // Stats
+    h('p',{style:{fontSize:10,fontWeight:700,color:'#888',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}},'Your Progress'),
+    h('div',{style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',borderRadius:14,
+      padding:'16px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:20}},
+      h('div',{style:{textAlign:'center'}},
+        h('p',{style:{fontSize:24,fontWeight:800,color:'#f59e0b'}},'🔥 '+state.streak),
+        h('p',{style:{fontSize:11,color:'#888'}},'Day Streak')),
+      h('div',{style:{textAlign:'center'}},
+        h('p',{style:{fontSize:24,fontWeight:800,color:'#22c55e'}},state.daily.length),
+        h('p',{style:{fontSize:11,color:'#888'}},'Tasks Today'))),
+
+    // Notifications
+    h('p',{style:{fontSize:10,fontWeight:700,color:'#888',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}},'Notifications by Category'),
+    h('div',{style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',borderRadius:14,overflow:'hidden',marginBottom:20}},
+      Object.entries(byGroup).map(([grp,tasks],i)=>{
+        const allOn=tasks.every(t=>state.notifs.includes(t.id));
+        const someOn=tasks.some(t=>state.notifs.includes(t.id));
+        return h('div',{key:grp,style:{display:'flex',alignItems:'center',justifyContent:'space-between',
+          padding:'12px 16px',borderTop:i>0?'1px solid hsl(var(--border))':'none'}},
+          h('div',{},
+            h('p',{style:{fontSize:13,fontWeight:600}},grp),
+            h('p',{style:{fontSize:11,color:'#888'}},tasks.length+' tasks · '+tasks.filter(t=>state.notifs.includes(t.id)).length+' notified')),
+          h('button',{onClick:()=>toggleGroup(grp),
+            style:{padding:'6px 8px',borderRadius:8,border:'none',cursor:'pointer',
+              background:allOn?'rgba(34,197,94,.15)':someOn?'rgba(245,158,11,.15)':'transparent',
+              color:allOn?'#22c55e':someOn?'#f59e0b':'#888'}},
+            allOn?h(icons.Bell):h(icons.BellOff)));
+      })),
+
+    // About
+    h('div',{style:{background:'hsl(var(--card))',border:'1px solid hsl(var(--border))',borderRadius:14,padding:'16px'}},
+      h('p',{style:{fontSize:13,fontWeight:700,marginBottom:6}},'Neik-Amal نیک عمل'),
+      h('p',{style:{fontSize:12,color:'#888',lineHeight:1.6}},
+        'A daily pious deeds tracker inspired by the Madani environment of Dawat-e-Islami. Based on the 56 daily tasks, weekly goals, monthly objectives and lifetime achievements.'),
+      h('p',{style:{fontSize:13,color:'#888',marginTop:10,textAlign:'right',fontFamily:'Georgia,serif',direction:'rtl'}},
+        'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ')),
+    h('p',{style:{textAlign:'center',fontSize:10,color:'#555',marginTop:12}},'All data stored locally · May Allah ﷻ accept your deeds. آمِينَ'));
+}
+
+// ─── CONFETTI ─────────────────────────────────────────────────────────────────
+function Confetti({show}) {
+  const ref=useRef(null);
+  useEffect(()=>{
+    if(!show||!ref.current)return;
+    const colors=['#22c55e','#f59e0b','#10b981','#fbbf24','#34d399','#86efac'];
+    const frags=[];
+    for(let i=0;i<28;i++){
+      const el=document.createElement('div');
+      el.className='conf-p';
+      const angle=(i/28)*360, dist=70+Math.random()*90;
+      el.style.cssText=`left:50%;top:40%;background:${colors[i%colors.length]};--tx:${Math.cos(angle*Math.PI/180)*dist}px;--ty:${Math.sin(angle*Math.PI/180)*dist-50}px;--rot:${Math.random()*720-360}deg;animation-delay:${Math.random()*0.15}s;width:${4+Math.random()*7}px;height:${4+Math.random()*7}px;border-radius:${Math.random()>.5?'50%':'3px'}`;
+      ref.current.appendChild(el);frags.push(el);
+    }
+    const t=setTimeout(()=>frags.forEach(f=>f.remove()),1800);
+    return()=>{clearTimeout(t);frags.forEach(f=>f.remove());};
+  },[show]);
+  return h('div',{ref,style:{position:'fixed',inset:0,pointerEvents:'none',zIndex:9999}});
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────────────
+function App() {
+  const [state,setState]=useState(loadState);
+  const [tab,setTab]=useState('home');
+  const [showCelebrate,setShowCelebrate]=useState(false);
+  const prevCount=useRef(state.daily.length);
+
+  // Apply theme
+  useEffect(()=>{
+    document.documentElement.classList.toggle('dark',state.theme==='dark');
+    localStorage.setItem('neik-amal-v2',JSON.stringify(state));
+  },[state]);
+
+  // Watch for all-complete
+  useEffect(()=>{
+    if(state.daily.length===56&&prevCount.current!==56){
+      setShowCelebrate(true);setTimeout(()=>setShowCelebrate(false),4000);
+    }
+    prevCount.current=state.daily.length;
+  },[state.daily.length]);
+
+  function checkBadges(s) {
+    const e=[...s.badges];
+    const add=id=>{if(!e.includes(id))e.push(id);};
+    if(s.daily.length>0)add('first');
+    if(s.daily.length===56)add('daily_all');
+    if(s.monthly.length===4)add('monthly_all');
+    if(s.lifetime.includes('l71'))add('scholar');
+    if(s.streak>=7)add('streak7');
+    if(s.streak>=30)add('streak30');
+    if(s.streak>=90)add('streak90');
+    if(s.streak>=365)add('streak365');
+    if(s.fullDayHist&&s.fullDayHist.length>=7)add('perfect_week');
+    const wp=WEEKLY_TASKS.filter(t=>(s.weekly[t.id]||0)>=5).length;
+    if(wp===12)add('weekly_all');
+    return e;
+  }
+
+  const toggleDaily=useCallback(id=>{
+    setState(prev=>{
+      const isDone=prev.daily.includes(id);
+      const newDaily=isDone?prev.daily.filter(x=>x!==id):[...prev.daily,id];
+      const wid='w'+id.slice(1);
+      const wt=WEEKLY_TASKS.find(t=>t.id===wid);
+      const newWeekly={...prev.weekly};
+      if(wt){
+        if(!isDone)newWeekly[wid]=Math.min(7,(newWeekly[wid]||0)+1);
+        else newWeekly[wid]=Math.max(0,(newWeekly[wid]||0)-1);
+      }
+      const newHist=[...new Set([...prev.streakHist,TODAY])];
+      const newStreak=calcStreak(newHist);
+      const allDone=newDaily.length===56;
+      const newFull=allDone&&!prev.fullDayHist.includes(TODAY)?[...prev.fullDayHist,TODAY]:prev.fullDayHist;
+      const ns={...prev,daily:newDaily,weekly:newWeekly,streakHist:newHist,streak:newStreak,fullDayHist:newFull};
+      ns.badges=checkBadges(ns);
+      return ns;
+    });
+  },[]);
+
+  const toggleMonthly=useCallback(id=>{
+    setState(prev=>{
+      const done=prev.monthly.includes(id);
+      const ns={...prev,monthly:done?prev.monthly.filter(x=>x!==id):[...prev.monthly,id]};
+      ns.badges=checkBadges(ns);return ns;
+    });
+  },[]);
+
+  const toggleLifetime=useCallback(id=>{
+    setState(prev=>{
+      const done=prev.lifetime.includes(id);
+      const ns={...prev,lifetime:done?prev.lifetime.filter(x=>x!==id):[...prev.lifetime,id]};
+      ns.badges=checkBadges(ns);return ns;
+    });
+  },[]);
+
+  const toggleNotif=useCallback(id=>{
+    setState(prev=>({...prev,notifs:prev.notifs.includes(id)?prev.notifs.filter(x=>x!==id):[...prev.notifs,id]}));
+  },[]);
+
+  const toggleTheme=useCallback(()=>{
+    setState(prev=>({...prev,theme:prev.theme==='dark'?'light':'dark'}));
+  },[]);
+
+  const dailyPct=Math.round((state.daily.length/56)*100);
+  const weeklyPassed=WEEKLY_TASKS.filter(t=>(state.weekly[t.id]||0)>=5).length;
+  const weeklyPct=Math.round((weeklyPassed/12)*100);
+  const monthlyPct=Math.round((state.monthly.length/4)*100);
+  const stars=dailyPct>=90?5:dailyPct>=70?4:dailyPct>=50?3:dailyPct>=30?2:dailyPct>0?1:0;
+
+  const navItems=[
+    {id:'home',label:'Home',icon:h(icons.Home)},
+    {id:'daily',label:'Daily',icon:h(icons.Sun)},
+    {id:'progress',label:'Progress',icon:h(icons.BarChart)},
+    {id:'awards',label:'Awards',icon:h(icons.Trophy)},
+    {id:'settings',label:'Settings',icon:h(icons.Settings)},
+  ];
+
+  return h('div',{style:{display:'flex',flexDirection:'column',minHeight:'100svh',
+    background:'hsl(var(--background))',maxWidth:430,margin:'0 auto',position:'relative'}},
+
+    // Screen content
+    h('main',{style:{flex:1,overflow:'hidden',position:'relative'}},
+      tab==='home'&&h('div',{style:{height:'100%',overflowY:'auto'}},
+        h(HomeScreen,{state,dailyPct,weeklyPct,monthlyPct,stars,
+          dailyCount:state.daily.length,weeklyCount:weeklyPassed})),
+      tab==='daily'&&h('div',{style:{height:'100%',display:'flex',flexDirection:'column',overflow:'hidden'}},
+        h(DailyScreen,{state,onToggle:toggleDaily,onToggleNotif:toggleNotif})),
+      tab==='progress'&&h('div',{style:{height:'100%',overflowY:'auto'}},
+        h(ProgressScreen,{state,onToggleMonthly:toggleMonthly,onToggleLifetime:toggleLifetime})),
+      tab==='awards'&&h('div',{style:{height:'100%',overflowY:'auto'}},
+        h(AwardsScreen,{state})),
+      tab==='settings'&&h('div',{style:{height:'100%',overflowY:'auto'}},
+        h(SettingsScreen,{state,onToggleTheme:toggleTheme,onToggleNotif:toggleNotif}))),
+
+    // Bottom nav
+    h('nav',{style:{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',
+      width:'100%',maxWidth:430,background:'hsl(var(--card))',
+      borderTop:'1px solid hsl(var(--border))',
+      backdropFilter:'blur(12px)',zIndex:50}},
+      h('div',{style:{display:'flex',justifyContent:'space-around',padding:'8px 8px',
+        paddingBottom:'max(8px,env(safe-area-inset-bottom))'}},
+        navItems.map(({id,label,icon})=>{
+          const active=tab===id;
+          return h('button',{key:id,className:'nav-btn'+(active?' active':''),
+            onClick:()=>setTab(id),
+            style:{display:'flex',flexDirection:'column',alignItems:'center',gap:3,
+              padding:'6px 10px',borderRadius:12,border:'none',cursor:'pointer',
+              background:'transparent',
+              color:active?'#22c55e':'hsl(var(--muted-foreground))',
+              transform:active?'scale(1.1)':'scale(1)',transition:'all 0.2s'}},
+            h('div',{style:{position:'relative'}},
+              icon,
+              active&&h('div',{style:{position:'absolute',bottom:-3,left:'50%',transform:'translateX(-50%)',
+                width:4,height:4,borderRadius:'50%',background:'#22c55e'}})),
+            h('span',{style:{fontSize:10,fontWeight:active?700:500}},label));
+        }))),
+
+    // Celebration
+    h(Confetti,{show:showCelebrate}),
+    showCelebrate&&h('div',{className:'overlay',onClick:()=>setShowCelebrate(false)},
+      h('div',{className:'modal celebrate'},
+        h('div',{style:{fontSize:48,marginBottom:8}},'🎉'),
+        h('h3',{style:{fontSize:18,fontWeight:800,color:'#22c55e',marginBottom:4}},'All Daily Tasks Complete!'),
+        h('p',{style:{fontSize:13,color:'#888',marginBottom:4}},'MashAllah! Truly a blessed day.'),
+        h('p',{style:{fontSize:14,fontFamily:'Georgia,serif',direction:'rtl',color:'#888'}},'جَزَاكَ اللّٰهُ خَيْرًا'))));
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
