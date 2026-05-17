@@ -1,0 +1,22 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.env.local
+
+# Android build outputs (keep android/ source, ignore generated build)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/keystore.properties
+neik-amal-upload.keystore
+*.apk
+*.aab
+*.jks
+*.keystore
+!android/app/debug.keystore
+
+# Capacitor
+.idea/
+*.iml
