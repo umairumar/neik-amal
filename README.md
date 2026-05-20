@@ -8,7 +8,7 @@
 
 ## ✨ Live Demo
 
-🔗 **[Try it now → umairumar.github.io/neik-amal](https://umairumar.github.io/neik-amal)**
+🔗 **[[Try it now → umairumar.github.io/neik-amal](https://umairumar.github.io/neik-amal)](https://piousdeeds.xyz/)**
 
 No install. No login. No data leaves your device.
 
