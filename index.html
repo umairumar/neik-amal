@@ -113,7 +113,7 @@ button{font-family:inherit}
      border-top:1px solid var(--border)}
 .light .nav{background:rgba(240,247,241,.9)}
 .nav-inner{display:flex;justify-content:space-around;align-items:center;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
-.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:12px;border:none;cursor:pointer;background:transparent;color:var(--text3);transition:all .2s;position:relative}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border-radius:12px;border:none;cursor:pointer;background:transparent;color:var(--text3);transition:all .2s;position:relative}
 .nav-btn.active{color:var(--green)}
 .nav-pill{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:28px;height:3px;border-radius:2px;background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.6)}
 
@@ -153,6 +153,43 @@ button{font-family:inherit}
 
 /* ── SECTION TITLE ── */
 .sec-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+
+/* ── STATUS SECTIONS ── */
+.status-section-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 4px 8px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border);margin-bottom:8px;margin-top:4px}
+.status-section-hdr.active-hdr{border-color:rgba(34,197,94,.2)}
+.status-section-hdr.soon-hdr{border-color:rgba(245,158,11,.2)}
+.status-section-hdr.future-hdr{border-color:rgba(139,92,246,.15)}
+
+/* ── FOCUS STAR ── */
+.focus-star{flex-shrink:0;padding:4px 6px;border-radius:8px;border:none;cursor:pointer;background:transparent;font-size:16px;line-height:1;transition:all .2s}
+.focus-star.on{color:var(--gold);filter:drop-shadow(0 0 4px rgba(245,158,11,.5))}
+.focus-star.off{color:var(--text3);opacity:.45}
+.task-card.focused{border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.04)}
+.task-card.focused::before{background:linear-gradient(to bottom,#f59e0b,#d97706)}
+
+/* ── FILTER CHIP FOCUS ── */
+.chip.focus-chip.on{background:rgba(139,92,246,.14);border-color:rgba(139,92,246,.35);color:var(--purple)}
+
+/* ── HASANAT TOAST ── */
+@keyframes toastUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(10px)}}
+.hasanat-toast{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;transform:translateX(-50%);z-index:200;
+  background:var(--card);border:1px solid rgba(245,158,11,.35);border-radius:14px;padding:12px 18px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);animation:toastUp .35s ease-out forwards;max-width:320px;width:calc(100% - 32px)}
+.hasanat-toast.out{animation:toastOut .3s ease-in forwards}
+
+/* ── DEED MGMT CARD ── */
+.deed-mgmt-card{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--card);margin-bottom:7px}
+.deed-actions{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.deed-act-btn{padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:9px;font-weight:700;cursor:pointer;background:var(--card2);color:var(--text2);transition:all .18s;white-space:nowrap}
+.deed-act-btn.activate{border-color:rgba(34,197,94,.3);color:var(--green)}
+.deed-act-btn.soon{border-color:rgba(245,158,11,.3);color:var(--gold)}
+.deed-act-btn.future{border-color:rgba(139,92,246,.25);color:var(--purple)}
+
+/* ── ONBOARDING ── */
+.onboard-deed{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--card);margin-bottom:6px;cursor:pointer;transition:all .2s}
+.onboard-deed.sel{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)}
+.onboard-deed.focus-sel{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.06)}
 </style>
 </head>
 <body>
@@ -223,6 +260,7 @@ const DAILY=[
 ];
 
 const WEEKLY=DAILY.slice(0,12).map(t=>({...t,id:'w'+t.id.slice(1)}));
+const GROUP_ORDER=['Salah','Quran','Dhikr','Character','Sunnah','Dawah','Knowledge','Org','Tawbah','Self-Check','Intentions'];
 
 const MONTHLY=[
   {id:'m66',n:66,text:'Did you fill in last month\'s Pious deeds booklet and submit it to your Nigran?',icon:'📋',g:'Self-Check'},
@@ -264,6 +302,9 @@ const BADGES=[
   {id:'scholar',name:'Scholar',desc:'Lifetime reading complete',icon:'📜',color:'#fb923c',type:'special'},
   {id:'salah_m',name:'Salah Master',desc:'All Salah tasks for 7 days',icon:'🕌',color:'#4ade80',type:'category'},
   {id:'quran_r',name:'Quran Reader',desc:'All Quran tasks for 7 days',icon:'📖',color:'#60a5fa',type:'category'},
+  {id:'hasanat10',name:'First Hasanat',desc:'Earn 10 Hasanat points',icon:'🤲',color:'#fbbf24',type:'special'},
+  {id:'focus_week',name:'Focused Week',desc:'Complete all focus deeds 7 days',icon:'🎯',color:'#a78bfa',type:'special'},
+  {id:'adopter',name:'Adopter',desc:'Activate 5 deeds from Plan Soon',icon:'🌿',color:'#34d399',type:'special'},
 ];
 
 /* ══════════════════════════════════════════════════════
@@ -279,22 +320,131 @@ function calcStreak(h){
   for(const dt of s){const d=new Date(dt);const diff=Math.round((cur-d)/864e5);if(diff<=1){streak++;cur=d;}else break;}
   return streak;
 }
-function defState(){return{daily:[],weekly:{},monthly:[],lifetime:[],streak:0,streakHist:[],fullHist:[],badges:[],notifs:[],theme:'dark',lastDay:TODAY,lastWeek:weekKey(),lastMonth:THIS_MONTH}}
+const STORAGE_KEY='na-v4';
+const LEGACY_KEY='na-v3';
+const HIGH_PTS_GROUPS=['Salah','Quran','Dhikr'];
+function deedPts(task){return task.pts||(HIGH_PTS_GROUPS.includes(task.g)?10:5);}
+function defaultDeedStatus(){
+  const ds={};
+  DAILY.forEach((t,i)=>{ds[t.id]=i<12?'active':'plan_future';});
+  return ds;
+}
+function defState(){return{
+  daily:[],weekly:{},monthly:[],lifetime:[],streak:0,streakHist:[],fullHist:[],badges:[],notifs:[],
+  theme:'dark',lastDay:TODAY,lastWeek:weekKey(),lastMonth:THIS_MONTH,
+  deedStatus:{},focusDeeds:[],hasanat:0,hasanatToday:0,deedStreaks:{},deedDayHist:{},
+  focusHist:[],catHist:{salah:[],quran:[]},promotions:0,onboarded:false,focusFilterDefault:false
+};}
+function migrateState(s){
+  const def=defState();
+  if(!s.deedStatus||!Object.keys(s.deedStatus).length){
+    s.deedStatus=defaultDeedStatus();
+    s.focusDeeds=DAILY.slice(0,12).slice(0,5).map(t=>t.id);
+    s.onboarded=true;
+  }
+  if(s.hasanat==null)s.hasanat=0;
+  if(s.hasanatToday==null)s.hasanatToday=0;
+  if(!s.deedStreaks)s.deedStreaks={};
+  if(!s.deedDayHist)s.deedDayHist={};
+  if(!s.focusHist)s.focusHist=[];
+  if(!s.catHist)s.catHist={salah:[],quran:[]};
+  if(s.promotions==null)s.promotions=0;
+  if(s.onboarded==null)s.onboarded=false;
+  if(!s.focusDeeds)s.focusDeeds=[];
+  return{...def,...s};
+}
 function loadState(){
   try{
-    const raw=localStorage.getItem('na-v3');
+    let raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)raw=localStorage.getItem(LEGACY_KEY);
     const def=defState();
     if(!raw)return def;
-    const s=JSON.parse(raw);
-    if(s.lastDay!==TODAY){s.daily=[];s.lastDay=TODAY;}
+    let s=JSON.parse(raw);
+    const dayReset=s.lastDay!==TODAY;
+    if(dayReset){s.daily=[];s.hasanatToday=0;s.lastDay=TODAY;}
     if(s.lastWeek!==weekKey()){s.weekly={};s.lastWeek=weekKey();}
     if(s.lastMonth!==THIS_MONTH){s.monthly=[];s.lastMonth=THIS_MONTH;}
+    s=migrateState(s);
     s.streak=calcStreak(s.streakHist||[]);
-    return{...def,...s};
+    DAILY.forEach(t=>{
+      const hist=s.deedDayHist[t.id]||[];
+      s.deedStreaks[t.id]=calcStreak(hist);
+    });
+    return s;
   }catch{return defState();}
 }
+function getDeedStatus(id,state){return(state.deedStatus||{})[id]||'plan_future';}
+function getDeedsByStatus(state,status){return DAILY.filter(t=>getDeedStatus(t.id,state)===status);}
+function getActiveDeeds(state){return getDeedsByStatus(state,'active');}
+function getFocusDeeds(state){
+  const allowed=new Set([...getDeedsByStatus(state,'active'),...getDeedsByStatus(state,'plan_soon')].map(t=>t.id));
+  return(state.focusDeeds||[]).filter(id=>allowed.has(id)).map(id=>DAILY.find(t=>t.id===id)).filter(Boolean);
+}
+function getRingDeeds(state){
+  const focus=getFocusDeeds(state);
+  if(focus.length)return focus;
+  const active=getActiveDeeds(state);
+  return active.length?active:DAILY;
+}
+function promoteDeed(state,id,newStatus){
+  const ds={...state.deedStatus,[id]:newStatus};
+  let promotions=state.promotions||0;
+  const oldStatus=getDeedStatus(id,state);
+  if(oldStatus==='plan_soon'&&newStatus==='active')promotions++;
+  let focusDeeds=[...(state.focusDeeds||[])];
+  if(newStatus==='plan_future')focusDeeds=focusDeeds.filter(x=>x!==id);
+  const ns={...state,deedStatus:ds,promotions,focusDeeds};
+  ns.badges=checkBadges(ns);
+  return ns;
+}
+function awardHasanat(prev,deedId,task){
+  const pts=deedPts(task);
+  const hist=[...(prev.deedDayHist[deedId]||[])];
+  if(!hist.includes(TODAY))hist.push(TODAY);
+  const streak=calcStreak(hist);
+  const bonus=streak>=7?Math.floor(pts*0.5):0;
+  const total=pts+bonus;
+  const deedDayHist={...prev.deedDayHist,[deedId]:hist};
+  const deedStreaks={...prev.deedStreaks,[deedId]:streak};
+  return{
+    hasanat:(prev.hasanat||0)+total,
+    hasanatToday:(prev.hasanatToday||0)+total,
+    deedDayHist,deedStreaks,
+    _toast:{pts:total,bonus,streak,task}
+  };
+}
+function revokeHasanat(prev,deedId,task){
+  const pts=deedPts(task);
+  const hist=(prev.deedDayHist[deedId]||[]).filter(d=>d!==TODAY);
+  const deedDayHist={...prev.deedDayHist,[deedId]:hist};
+  const deedStreaks={...prev.deedStreaks,[deedId]:calcStreak(hist)};
+  return{
+    hasanat:Math.max(0,(prev.hasanat||0)-pts),
+    hasanatToday:Math.max(0,(prev.hasanatToday||0)-pts),
+    deedDayHist,deedStreaks
+  };
+}
+function updateFocusAndCategoryHist(s){
+  const focusIds=getFocusDeeds(s).map(t=>t.id);
+  if(focusIds.length&&focusIds.every(id=>s.daily.includes(id))){
+    if(!s.focusHist.includes(TODAY))s.focusHist=[...s.focusHist,TODAY];
+  }else{
+    s.focusHist=(s.focusHist||[]).filter(d=>d!==TODAY);
+  }
+  const salahTasks=DAILY.filter(t=>t.g==='Salah'&&getDeedStatus(t.id,s)==='active');
+  const quranTasks=DAILY.filter(t=>t.g==='Quran'&&getDeedStatus(t.id,s)==='active');
+  const catHist={salah:[...(s.catHist?.salah||[])],quran:[...(s.catHist?.quran||[])]};
+  if(salahTasks.length&&salahTasks.every(t=>s.daily.includes(t.id))){
+    if(!catHist.salah.includes(TODAY))catHist.salah.push(TODAY);
+  }else catHist.salah=catHist.salah.filter(d=>d!==TODAY);
+  if(quranTasks.length&&quranTasks.every(t=>s.daily.includes(t.id))){
+    if(!catHist.quran.includes(TODAY))catHist.quran.push(TODAY);
+  }else catHist.quran=catHist.quran.filter(d=>d!==TODAY);
+  s.catHist=catHist;
+  return s;
+}
 function checkBadges(s){
-  const e=[...s.badges];
+  const e=[...(s.badges||[])];
   const add=id=>{if(!e.includes(id))e.push(id);};
   if(s.daily.length>0)add('first');
   if(s.daily.length===56)add('daily_all');
@@ -306,6 +456,11 @@ function checkBadges(s){
   if(s.streak>=365)add('streak365');
   if((s.fullHist||[]).length>=7)add('perfect_week');
   if(WEEKLY.filter(t=>(s.weekly[t.id]||0)>=5).length===12)add('weekly_all');
+  if((s.hasanat||0)>=10)add('hasanat10');
+  if(calcStreak(s.focusHist||[])>=7)add('focus_week');
+  if((s.promotions||0)>=5)add('adopter');
+  if(calcStreak(s.catHist?.salah||[])>=7)add('salah_m');
+  if(calcStreak(s.catHist?.quran||[])>=7)add('quran_r');
   return e;
 }
 
@@ -328,6 +483,8 @@ const I={
   Moon:()=>h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},h('path',{d:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'})),
   SunSmall:()=>h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},h('circle',{cx:12,cy:12,r:4}),h('line',{x1:12,y1:2,x2:12,y2:4}),h('line',{x1:12,y1:20,x2:12,y2:22}),h('line',{x1:2,y1:12,x2:4,y2:12}),h('line',{x1:20,y1:12,x2:22,y2:12})),
   Filter:()=>h('svg',{width:13,height:13,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},h('polygon',{points:'22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3'})),
+  List:()=>h('svg',{width:22,height:22,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},h('line',{x1:8,y1:6,x2:21,y2:6}),h('line',{x1:8,y1:12,x2:21,y2:12}),h('line',{x1:8,y1:18,x2:21,y2:18}),h('line',{x1:3,y1:6,x2:3.01,y2:6}),h('line',{x1:3,y1:12,x2:3.01,y2:12}),h('line',{x1:3,y1:18,x2:3.01,y2:18})),
+  Star:({filled})=>h('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:filled?'currentColor':'none',stroke:'currentColor',strokeWidth:2},h('polygon',{points:'12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'})),
 };
 
 /* ══════════════════════════════════════════════════════
@@ -385,23 +542,48 @@ function Confetti({show}){
 }
 
 /* ══════════════════════════════════════════════════════
+   HASANAT TOAST
+══════════════════════════════════════════════════════ */
+function HasanatToast({toast,onDone}){
+  const[out,setOut]=useState(false);
+  useEffect(()=>{
+    if(!toast)return;
+    const t1=setTimeout(()=>setOut(true),2200);
+    const t2=setTimeout(()=>{setOut(false);onDone();},2600);
+    return()=>{clearTimeout(t1);clearTimeout(t2);};
+  },[toast,onDone]);
+  if(!toast)return null;
+  const{pts,bonus,streak,task}=toast;
+  return h('div',{className:'hasanat-toast'+(out?' out':'')},
+    h('div',{style:{display:'flex',alignItems:'center',gap:10}},
+      h('span',{style:{fontSize:24}},'🤲'),
+      h('div',{},
+        h('p',{style:{fontSize:14,fontWeight:800,color:'var(--gold)'}},'+'+pts+' Hasanat'),
+        h('p',{style:{fontSize:11,color:'var(--text3)',marginTop:2}},
+          task.icon+' '+task.g+(bonus?' · streak bonus!':'')+(streak>1?' · '+streak+' day streak':'')))));
+}
+
+/* ══════════════════════════════════════════════════════
    TASK CARD
-═══════════════════════════════════════════���══════════ */
-function TaskCard({task,done,notif,onToggle,onNotif,showNotif}){
+══════════════════════════════════════════════════════ */
+function TaskCard({task,done,notif,onToggle,onNotif,showNotif,isFocus,onFocus,showFocus,readOnly,statusLabel}){
   const[pop,setPop]=useState(false);
-  const go=()=>{if(!done){setPop(true);setTimeout(()=>setPop(false),350);}onToggle(task.id);};
-  return h('div',{className:'task-card'+(done?' done':''),onClick:go,
-    style:{transform:pop?'scale(1.025)':'scale(1)'}},
+  const go=()=>{if(readOnly)return;if(!done){setPop(true);setTimeout(()=>setPop(false),350);}onToggle(task.id);};
+  return h('div',{className:'task-card'+(done?' done':'')+(isFocus?' focused':''),onClick:go,
+    style:{transform:pop?'scale(1.025)':'scale(1)',cursor:readOnly?'default':'pointer'}},
     h('div',{className:'cb'+(done?' done':'')},
       done&&h('span',{className:'check-pop'},h(I.Check))),
     h('div',{style:{flex:1,minWidth:0}},
-      h('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:3}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:3,flexWrap:'wrap'}},
         h('span',{style:{fontSize:14,lineHeight:1}},task.icon),
         h('span',{style:{fontSize:9,fontWeight:700,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.08em',background:'var(--card2)',padding:'2px 6px',borderRadius:6}},task.g),
-        h('span',{style:{fontSize:9,color:'var(--text3)'}},'#'+task.n)),
+        statusLabel&&h('span',{className:'pill',style:{fontSize:8,background:'rgba(139,92,246,.12)',color:'var(--purple)'}},statusLabel),
+        h('span',{style:{fontSize:9,color:'var(--text3)'}},'#'+task.n),
+        h('span',{style:{fontSize:9,color:'var(--gold)',fontWeight:700,marginLeft:'auto'}},'+'+deedPts(task))),
       h('p',{style:{fontSize:12.5,lineHeight:1.45,color:done?'var(--text3)':'var(--text)',
         textDecoration:done?'line-through':'none',textDecorationColor:'rgba(34,197,94,.4)',
         transition:'color .25s'}},task.text)),
+    showFocus&&h('button',{className:'focus-star'+(isFocus?' on':' off'),onClick:e=>{e.stopPropagation();onFocus(task.id);}},isFocus?'★':'☆'),
     showNotif&&h('button',{onClick:e=>{e.stopPropagation();onNotif(task.id);},
       style:{flexShrink:0,padding:'5px 6px',borderRadius:9,border:'none',cursor:'pointer',
         background:notif?'rgba(245,158,11,.15)':'transparent',
@@ -412,7 +594,7 @@ function TaskCard({task,done,notif,onToggle,onNotif,showNotif}){
 /* ══════════════════════════════════════════════════════
    GROUP ACCORDION
 ══════════════════════════════════════════════════════ */
-function TaskGroup({name,tasks,done,notifs,onToggle,onNotif,showNotif}){
+function TaskGroup({name,tasks,done,notifs,onToggle,onNotif,showNotif,focusDeeds,onFocus,showFocus}){
   const[open,setOpen]=useState(true);
   const total=tasks.length,cnt=tasks.filter(t=>done.includes(t.id)).length;
   const pct=Math.round(cnt/total*100);
@@ -432,19 +614,44 @@ function TaskGroup({name,tasks,done,notifs,onToggle,onNotif,showNotif}){
         h(I.ChevronDown,{open}))),
     open&&h('div',{style:{paddingLeft:4}},
       tasks.map(t=>h(TaskCard,{key:t.id,task:t,done:done.includes(t.id),notif:notifs.includes(t.id),
-        onToggle,onNotif,showNotif}))));
+        onToggle,onNotif,showNotif,isFocus:(focusDeeds||[]).includes(t.id),onFocus,showFocus}))));
+}
+
+function StatusSection({title,subtitle,icon,color,tasks,done,notifs,onToggle,onNotif,showNotif,focusDeeds,onFocus,showFocus,defaultOpen,className}){
+  const[open,setOpen]=useState(defaultOpen!==false);
+  if(!tasks.length)return null;
+  const cnt=tasks.filter(t=>done.includes(t.id)).length;
+  const grouped=useMemo(()=>{
+    const map={};
+    tasks.forEach(t=>{if(!map[t.g])map[t.g]=[];map[t.g].push(t);});
+    return GROUP_ORDER.filter(g=>map[g]).map(g=>({g,tasks:map[g]}));
+  },[tasks]);
+  return h('div',{style:{marginBottom:16}},
+    h('div',{className:'status-section-hdr '+className,onClick:()=>setOpen(o=>!o)},
+      h('div',{style:{display:'flex',alignItems:'center',gap:8}},
+        h('span',{style:{fontSize:18}},icon),
+        h('div',{},
+          h('span',{style:{fontSize:14,fontWeight:800,color}},title),
+          h('span',{style:{fontSize:10,color:'var(--text3)',marginLeft:8}},cnt+'/'+tasks.length+' done'))),
+      h('div',{style:{display:'flex',alignItems:'center',gap:6}},
+        h('span',{className:'pill',style:{background:color+'22',color,fontSize:9}},subtitle),
+        h(I.ChevronDown,{open}))),
+    open&&grouped.map(({g,tasks:t2})=>h(TaskGroup,{key:g,name:g,tasks:t2,done,notifs,onToggle,onNotif,showNotif,focusDeeds,onFocus,showFocus})));
 }
 
 /* ══════════════════════════════════════════════════════
    HOME SCREEN
 ══════════════════════════════════════════════════════ */
-function HomeScreen({state,dPct,wPct,mPct,stars,dCount,wCount}){
+function HomeScreen({state,dPct,wPct,mPct,stars,dCount,dTotal,focusCount,wCount,onToggle}){
   const quote=useMemo(()=>{const d=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5);return QUOTES[d%QUOTES.length];},[]);
   const hr=new Date().getHours();
   const greet=hr<5?'Good Night':hr<12?'Good Morning':hr<17?'Good Afternoon':hr<21?'Good Evening':'Good Night';
   const greetAr=hr<5?'مساء الخير':hr<12?'صباح الخير':hr<17?'مساء النور':hr<21?'مساء الخير':'تصبح على خير';
   const today=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   const s=state;
+  const focusDeeds=getFocusDeeds(state);
+  const pendingFocus=focusDeeds.filter(t=>!s.daily.includes(t.id)).slice(0,5);
+  const remaining=dTotal-dCount;
 
   return h('div',{style:{overflowY:'auto',height:'100%',paddingBottom:'var(--nav-h)'}},
 
@@ -452,7 +659,7 @@ function HomeScreen({state,dPct,wPct,mPct,stars,dCount,wCount}){
     h('div',{className:'geo',style:{background:'linear-gradient(160deg,#0a1a0c 0%,#0f2012 50%,#0a1a0c 100%)',padding:'28px 20px 24px',position:'relative',overflow:'hidden'}},
       h('div',{style:{position:'absolute',top:0,right:0,width:200,height:200,borderRadius:'50%',background:'radial-gradient(circle,rgba(34,197,94,.08) 0%,transparent 70%)',transform:'translate(40px,-60px)'}}),
       h('div',{style:{position:'relative',zIndex:1}},
-        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20}},
+        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}},
           h('div',{},
             h('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:2}},
               h('p',{style:{fontSize:11,color:'var(--text3)',fontWeight:600,textTransform:'uppercase',letterSpacing:'.06em'}},greet),
@@ -460,14 +667,20 @@ function HomeScreen({state,dPct,wPct,mPct,stars,dCount,wCount}){
             h('h1',{style:{fontSize:32,fontWeight:900,lineHeight:1.1,letterSpacing:'-.5px'},className:'shimmer'},'نیک عمل'),
             h('p',{style:{fontSize:12,color:'var(--text3)',marginTop:2,fontWeight:500}},'Neik-Amal · Pious Deeds'),
             h('p',{style:{fontSize:11,color:'rgba(122,155,125,.6)',marginTop:1}},today)),
-          s.streak>0
-            ? h('div',{className:'streak-pulse',style:{display:'flex',flexDirection:'column',alignItems:'center',gap:2,background:'rgba(245,158,11,.12)',border:'1px solid rgba(245,158,11,.3)',borderRadius:16,padding:'10px 14px',color:'var(--gold)'}},
-                h(I.Flame),
-                h('span',{style:{fontSize:22,fontWeight:900,lineHeight:1}},s.streak),
-                h('span',{style:{fontSize:9,fontWeight:700,color:'rgba(245,158,11,.7)',textTransform:'uppercase',letterSpacing:'.05em'}},'day streak'))
-            : h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',gap:2,background:'rgba(34,197,94,.08)',border:'1px solid rgba(34,197,94,.15)',borderRadius:16,padding:'10px 14px'}},
-                h('span',{style:{fontSize:22}},'🌱'),
-                h('span',{style:{fontSize:9,color:'var(--text3)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em'}},'Start today'))),
+          h('div',{style:{display:'flex',flexDirection:'column',gap:8,alignItems:'flex-end'}},
+            s.streak>0
+              ? h('div',{className:'streak-pulse',style:{display:'flex',flexDirection:'column',alignItems:'center',gap:2,background:'rgba(245,158,11,.12)',border:'1px solid rgba(245,158,11,.3)',borderRadius:16,padding:'10px 14px',color:'var(--gold)'}},
+                  h(I.Flame),
+                  h('span',{style:{fontSize:22,fontWeight:900,lineHeight:1}},s.streak),
+                  h('span',{style:{fontSize:9,fontWeight:700,color:'rgba(245,158,11,.7)',textTransform:'uppercase',letterSpacing:'.05em'}},'day streak'))
+              : h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',gap:2,background:'rgba(34,197,94,.08)',border:'1px solid rgba(34,197,94,.15)',borderRadius:16,padding:'10px 14px'}},
+                  h('span',{style:{fontSize:22}},'🌱'),
+                  h('span',{style:{fontSize:9,color:'var(--text3)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em'}},'Start today')),
+            h('div',{style:{display:'flex',alignItems:'center',gap:6,background:'rgba(245,158,11,.1)',border:'1px solid rgba(245,158,11,.25)',borderRadius:12,padding:'6px 12px'}},
+              h('span',{style:{fontSize:16}},'🤲'),
+              h('div',{style:{textAlign:'right'}},
+                h('span',{style:{fontSize:15,fontWeight:800,color:'var(--gold)'}},(s.hasanat||0)),
+                h('span',{style:{fontSize:9,color:'var(--text3)',display:'block'}},'Hasanat · +'+(s.hasanatToday||0)+' today'))))),
 
         /* Rings */
         h('div',{style:{display:'flex',justifyContent:'center',marginBottom:16}},
@@ -484,7 +697,7 @@ function HomeScreen({state,dPct,wPct,mPct,stars,dCount,wCount}){
     h('div',{style:{padding:'16px 16px 0'}},
       h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:14}},
         [
-          {e:'📅',v:`${dCount}/56`,l:'Today',c:'var(--green)',bg:'rgba(34,197,94,.08)'},
+          {e:'🎯',v:focusCount?`${dCount}/${focusCount}`:`${dCount}/${dTotal}`,l:focusCount?'Focus':'Today',c:'var(--green)',bg:'rgba(34,197,94,.08)'},
           {e:'📊',v:`${wCount}/12`,l:'Weekly',c:'var(--gold)',bg:'rgba(245,158,11,.08)'},
           {e:'🏅',v:`${s.badges.length}`,l:'Badges',c:'#10b981',bg:'rgba(16,185,129,.08)'},
         ].map(({e,v,l,c,bg})=>h('div',{key:l,style:{background:bg,border:'1px solid var(--border)',borderRadius:14,padding:'12px 8px',textAlign:'center'}},
@@ -492,10 +705,19 @@ function HomeScreen({state,dPct,wPct,mPct,stars,dCount,wCount}){
           h('div',{style:{fontSize:17,fontWeight:800,color:c,letterSpacing:'-.3px'}},v),
           h('div',{style:{fontSize:10,color:'var(--text3)',fontWeight:600,textTransform:'uppercase',letterSpacing:'.05em'}},l)))),
 
+      focusDeeds.length>0&&pendingFocus.length>0&&h('div',{style:{background:'var(--card)',border:'1px solid rgba(245,158,11,.25)',borderRadius:16,padding:'14px 16px',marginBottom:14}},
+        h('p',{className:'sec-title',style:{marginBottom:10}},"Today's Focus"),
+        pendingFocus.map(t=>h('div',{key:t.id,onClick:()=>onToggle(t.id),
+          style:{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid var(--border)',cursor:'pointer'}},
+          h('div',{className:'cb',style:{width:20,height:20}}),
+          h('span',{style:{fontSize:16}},t.icon),
+          h('p',{style:{fontSize:12,lineHeight:1.4,flex:1,color:'var(--text)'}},t.text.length>80?t.text.slice(0,80)+'…':t.text),
+          h('span',{style:{fontSize:9,color:'var(--gold)',fontWeight:700}},'+'+deedPts(t))))),
+
       /* Progress bar */
       h('div',{style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,padding:'14px 16px',marginBottom:14}},
         h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}},
-          h('span',{style:{fontSize:12,color:'var(--text2)',fontWeight:600}},"Today's Progress"),
+          h('span',{style:{fontSize:12,color:'var(--text2)',fontWeight:600}},focusCount?'Focus Progress':"Today's Progress"),
           h('span',{style:{fontSize:12,color:'var(--green)',fontWeight:700}},dPct+'%')),
         h('div',{className:'pbar-wrap',style:{height:8,borderRadius:4}},
           h('div',{className:'pbar-fill',style:{width:dPct+'%',borderRadius:4,
@@ -514,52 +736,55 @@ function HomeScreen({state,dPct,wPct,mPct,stars,dCount,wCount}){
       dPct===100
         ? h('div',{style:{background:'rgba(34,197,94,.09)',border:'1px solid rgba(34,197,94,.25)',borderRadius:16,padding:'18px',textAlign:'center',marginBottom:14}},
             h('div',{style:{fontSize:38,marginBottom:6}},'🎉'),
-            h('p',{style:{fontWeight:800,color:'var(--green)',fontSize:15,marginBottom:2}},'All Daily Tasks Complete!'),
+            h('p',{style:{fontWeight:800,color:'var(--green)',fontSize:15,marginBottom:2}},'All Focus Deeds Complete!'),
             h('p',{style:{fontSize:12,color:'var(--text3)'}},'MashAllah! What a blessed day.'),
             h('p',{style:{fontSize:13,color:'var(--text3)',marginTop:6,fontFamily:'Georgia,serif',direction:'rtl'}},'جَزَاكَ اللّٰهُ خَيْرًا'))
         : h('div',{style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,padding:'14px 16px',display:'flex',alignItems:'center',gap:12,marginBottom:14}},
             h('div',{style:{width:40,height:40,borderRadius:12,background:'rgba(34,197,94,.12)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:18}},'⚡'),
             h('div',{},
-              h('p',{style:{fontSize:13,fontWeight:700,color:'var(--text)'}},(56-dCount)+' task'+(56-dCount!==1?'s':'')+' remaining today'),
+              h('p',{style:{fontSize:13,fontWeight:700,color:'var(--text)'}},remaining+' deed'+(remaining!==1?'s':'')+' remaining'+(focusCount?' in focus':'')),
               h('p',{style:{fontSize:11,color:'var(--text3)',marginTop:2}},dPct>=50?'Halfway there! Keep going 💪':'Every deed counts — start now 🌱')))));
 }
 
 /* ══════════════════════════════════════════════════════
    DAILY SCREEN
 ══════════════════════════════════════════════════════ */
-const GROUP_ORDER=['Salah','Quran','Dhikr','Character','Sunnah','Dawah','Knowledge','Org','Tawbah','Self-Check','Intentions'];
+function filterTasks(tasks,search,grp,pendingOnly,done,focusOnly,focusDeeds){
+  return tasks.filter(t=>{
+    const mg=grp==='All'||t.g===grp;
+    const ms=!search||t.text.toLowerCase().includes(search.toLowerCase());
+    const mp=!pendingOnly||!done.includes(t.id);
+    const mf=!focusOnly||focusDeeds.includes(t.id);
+    return mg&&ms&&mp&&mf;
+  });
+}
 
-function DailyScreen({state,onToggle,onNotif}){
+function DailyScreen({state,onToggle,onNotif,onFocus}){
   const[search,setSearch]=useState('');
   const[grp,setGrp]=useState('All');
   const[pendingOnly,setPending]=useState(false);
+  const[focusOnly,setFocusOnly]=useState(state.focusFilterDefault||false);
   const done=state.daily;
-  const pct=Math.round(done.length/56*100);
+  const focusDeeds=(state.focusDeeds||[]);
+  const activeTasks=getDeedsByStatus(state,'active');
+  const soonTasks=getDeedsByStatus(state,'plan_soon');
+  const futureTasks=getDeedsByStatus(state,'plan_future');
+  const ringDeeds=getRingDeeds(state);
+  const ringDone=done.filter(id=>ringDeeds.some(t=>t.id===id)).length;
+  const pct=ringDeeds.length?Math.round(ringDone/ringDeeds.length*100):0;
 
-  const grouped=useMemo(()=>{
-    const map={};
-    DAILY.forEach(t=>{if(!map[t.g])map[t.g]=[];map[t.g].push(t);});
-    return GROUP_ORDER.filter(g=>map[g]).map(g=>({g,tasks:map[g]}));
-  },[]);
-
-  const visGroups=useMemo(()=>{
-    return grouped.map(({g,tasks})=>({
-      g,tasks:tasks.filter(t=>{
-        const mg=grp==='All'||g===grp;
-        const ms=!search||t.text.toLowerCase().includes(search.toLowerCase());
-        const mp=!pendingOnly||!done.includes(t.id);
-        return mg&&ms&&mp;
-      })
-    })).filter(({tasks})=>tasks.length>0);
-  },[grouped,grp,search,pendingOnly,done]);
+  const filt=tasks=>filterTasks(tasks,search,grp,pendingOnly,done,focusOnly,focusDeeds);
+  const fActive=filt(activeTasks);
+  const fSoon=filt(soonTasks);
+  const fFuture=filt(futureTasks);
+  const hasResults=fActive.length+fSoon.length+fFuture.length>0;
 
   return h('div',{style:{display:'flex',flexDirection:'column',height:'100%',overflow:'hidden'}},
-    /* sticky header */
     h('div',{style:{padding:'20px 16px 12px',background:'var(--bg)',borderBottom:'1px solid var(--border)',flexShrink:0}},
       h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:10}},
         h('div',{},
           h('h2',{style:{fontSize:20,fontWeight:800,letterSpacing:'-.3px'}},'Daily Deeds'),
-          h('p',{style:{fontSize:11,color:'var(--text3)',marginTop:1}},done.length+' of 56 completed')),
+          h('p',{style:{fontSize:11,color:'var(--text3)',marginTop:1}},ringDone+' of '+ringDeeds.length+' completed')),
         h('div',{style:{textAlign:'right'}},
           h('div',{style:{fontSize:28,fontWeight:900,color:'var(--green)',lineHeight:1}},pct+'%'),
           h('div',{style:{fontSize:10,color:'var(--text3)'}},pct===100?'🎉 Complete!':'in progress'))),
@@ -569,17 +794,27 @@ function DailyScreen({state,onToggle,onNotif}){
         h('span',{className:'search-icon'},h(I.Search)),
         h('input',{value:search,onChange:e=>setSearch(e.target.value),placeholder:'Search tasks…'})),
       h('div',{style:{display:'flex',gap:7,overflowX:'auto',paddingBottom:2}},
+        h('button',{className:'chip focus-chip'+(focusOnly?' on':''),onClick:()=>setFocusOnly(p=>!p),style:{display:'flex',alignItems:'center',gap:4}},'★ Focus'),
         h('button',{className:'chip'+(pendingOnly?' amber':''),onClick:()=>setPending(p=>!p),style:{display:'flex',alignItems:'center',gap:4}},
           h(I.Filter),' Pending'),
         ['All',...GROUP_ORDER].map(g=>h('button',{key:g,className:'chip'+(grp===g?' on':''),onClick:()=>setGrp(g)},g)))),
 
     h('div',{style:{flex:1,overflowY:'auto',padding:'12px 16px',paddingBottom:'var(--nav-h)'}},
-      visGroups.length===0
+      !hasResults
         ? h('div',{style:{textAlign:'center',padding:'60px 0',color:'var(--text3)'}},
             h('div',{style:{fontSize:44,marginBottom:10}},'✅'),
             h('p',{style:{fontSize:14,fontWeight:600}},'All caught up!'),
-            h('p',{style:{fontSize:12,marginTop:4}},pendingOnly?'No pending tasks here 🎉':'No tasks found'))
-        : visGroups.map(({g,tasks})=>h(TaskGroup,{key:g,name:g,tasks,done:state.daily,notifs:state.notifs,onToggle,onNotif,showNotif:true}))));
+            h('p',{style:{fontSize:12,marginTop:4}},focusOnly?'No focus deeds match 🎯':pendingOnly?'No pending tasks here 🎉':'No tasks found'))
+        : h(Fragment,null,
+            h(StatusSection,{title:'Currently Doing',subtitle:'Active',icon:'✅',color:'var(--green)',
+              className:'active-hdr',tasks:fActive,done,notifs:state.notifs,onToggle,onNotif,showNotif:true,
+              focusDeeds,onFocus,showFocus:true,defaultOpen:true}),
+            h(StatusSection,{title:'Plan Soon',subtitle:'Short-run',icon:'⚡',color:'var(--gold)',
+              className:'soon-hdr',tasks:fSoon,done,notifs:state.notifs,onToggle,onNotif,showNotif:true,
+              focusDeeds,onFocus,showFocus:true,defaultOpen:true}),
+            h(StatusSection,{title:'Plan Future',subtitle:'Later',icon:'🔮',color:'var(--purple)',
+              className:'future-hdr',tasks:fFuture,done,notifs:state.notifs,onToggle,onNotif,showNotif:false,
+              focusDeeds,onFocus,showFocus:false,defaultOpen:false}))));
 }
 
 /* ══════════════════════════════════════════════════════
@@ -675,6 +910,7 @@ function ProgressScreen({state,onMonthly,onLifetime}){
 function AwardsScreen({state}){
   const earned=state.badges, total=BADGES.length;
   const pct=Math.round(earned.length/total*100);
+  const focusList=getFocusDeeds(state);
   const byType={streak:[],completion:[],category:[],special:[]};
   BADGES.forEach(b=>byType[b.type].push(b));
   const cats=[['🔥 Streaks','streak'],['⭐ Completion','completion'],['🎯 Category','category'],['✨ Special','special']];
@@ -715,19 +951,159 @@ function AwardsScreen({state}){
         h('p',{className:'sec-title'},'Next to Unlock'),
         !earned.includes('streak7')&&state.streak>0&&h('div',{style:{display:'flex',gap:8,alignItems:'center',marginBottom:6}},h('span','🥉'),h('span',{style:{fontSize:12}},'Week Warrior — '+(7-state.streak)+' more day'+(7-state.streak!==1?'s':''))),
         !earned.includes('daily_all')&&h('div',{style:{display:'flex',gap:8,alignItems:'center',marginBottom:6}},h('span','⭐'),h('span',{style:{fontSize:12}},'Pious Day — Complete all 56 tasks in one day')),
+        !earned.includes('hasanat10')&&h('div',{style:{display:'flex',gap:8,alignItems:'center',marginBottom:6}},h('span','🤲'),h('span',{style:{fontSize:12}},'First Hasanat — Earn 10 Hasanat points')),
+        !earned.includes('focus_week')&&focusList.length>0&&h('div',{style:{display:'flex',gap:8,alignItems:'center',marginBottom:6}},h('span','🎯'),h('span',{style:{fontSize:12}},'Focused Week — Complete all focus deeds 7 days')),
         !earned.includes('first')&&h('div',{style:{display:'flex',gap:8,alignItems:'center',marginBottom:6}},h('span','🌱'),h('span',{style:{fontSize:12}},'First Step — Complete any task today')),
         earned.length===total&&h('p',{style:{fontSize:13,fontWeight:700,color:'var(--gold)',textAlign:'center'}},'MashAllah! All badges earned! 🌟'))));
 }
 
 /* ══════════════════════════════════════════════════════
+   MY DEEDS SCREEN
+══════════════════════════════════════════════════════ */
+function DeedMgmtCard({task,status,isFocus,onFocus,onStatus}){
+  const statusActions={
+    active:[{l:'Soon',s:'plan_soon',c:'soon'},{l:'Future',s:'plan_future',c:'future'}],
+    plan_soon:[{l:'Activate',s:'active',c:'activate'},{l:'Future',s:'plan_future',c:'future'}],
+    plan_future:[{l:'Soon',s:'plan_soon',c:'soon'}]
+  };
+  const actions=statusActions[status]||[];
+  return h('div',{className:'deed-mgmt-card'},
+    h('button',{className:'focus-star'+(isFocus?' on':' off'),onClick:()=>onFocus(task.id),title:'Toggle focus'},isFocus?'★':'☆'),
+    h('div',{style:{flex:1,minWidth:0}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:3}},
+        h('span',{style:{fontSize:14}},task.icon),
+        h('span',{style:{fontSize:9,fontWeight:700,color:'var(--text3)',textTransform:'uppercase',background:'var(--card2)',padding:'2px 6px',borderRadius:6}},task.g),
+        h('span',{style:{fontSize:9,color:'var(--gold)',fontWeight:700}},'+'+deedPts(task))),
+      h('p',{style:{fontSize:12,lineHeight:1.4,color:'var(--text)'}},task.text.length>100?task.text.slice(0,100)+'…':task.text)),
+    h('div',{className:'deed-actions'},
+      actions.map(a=>h('button',{key:a.s,className:'deed-act-btn '+a.c,onClick:()=>onStatus(task.id,a.s)},a.l))));
+}
+
+function MyDeedsScreen({state,onFocus,onStatus}){
+  const[search,setSearch]=useState('');
+  const[grp,setGrp]=useState('All');
+  const filt=status=>{
+    return getDeedsByStatus(state,status).filter(t=>{
+      const ms=!search||t.text.toLowerCase().includes(search.toLowerCase());
+      const mg=grp==='All'||t.g===grp;
+      return ms&&mg;
+    });
+  };
+  const active=filt('active'), soon=filt('plan_soon'), future=filt('plan_future');
+  const focusDeeds=state.focusDeeds||[];
+
+  return h('div',{style:{display:'flex',flexDirection:'column',height:'100%',overflow:'hidden'}},
+    h('div',{style:{padding:'20px 16px 12px',background:'var(--bg)',borderBottom:'1px solid var(--border)',flexShrink:0}},
+      h('h2',{style:{fontSize:20,fontWeight:800,marginBottom:4}},'My Deeds'),
+      h('p',{style:{fontSize:11,color:'var(--text3)',marginBottom:10}},active.length+' active · '+soon.length+' plan soon · '+focusDeeds.length+' focused'),
+      h('div',{className:'search-wrap'},
+        h('span',{className:'search-icon'},h(I.Search)),
+        h('input',{value:search,onChange:e=>setSearch(e.target.value),placeholder:'Search deeds…'})),
+      h('div',{style:{display:'flex',gap:7,overflowX:'auto',paddingBottom:2,marginTop:10}},
+        ['All',...GROUP_ORDER].map(g=>h('button',{key:g,className:'chip'+(grp===g?' on':''),onClick:()=>setGrp(g)},g)))),
+
+    h('div',{style:{flex:1,overflowY:'auto',padding:'12px 16px',paddingBottom:'var(--nav-h)'}},
+      h('p',{className:'sec-title'},'Currently Doing ('+active.length+')'),
+      active.length?active.map(t=>h(DeedMgmtCard,{key:t.id,task:t,status:'active',isFocus:focusDeeds.includes(t.id),onFocus,onStatus})):
+        h('p',{style:{fontSize:12,color:'var(--text3)',marginBottom:16,padding:'8px 0'}},'No active deeds — activate from Plan Soon'),
+
+      h('p',{className:'sec-title',style:{marginTop:8}},'Plan Soon ('+soon.length+')'),
+      soon.length?soon.map(t=>h(DeedMgmtCard,{key:t.id,task:t,status:'plan_soon',isFocus:focusDeeds.includes(t.id),onFocus,onStatus})):
+        h('p',{style:{fontSize:12,color:'var(--text3)',marginBottom:16,padding:'8px 0'}},'Move deeds here for short-run adoption'),
+
+      h('p',{className:'sec-title',style:{marginTop:8}},'Plan Future ('+future.length+')'),
+      future.length?future.map(t=>h(DeedMgmtCard,{key:t.id,task:t,status:'plan_future',isFocus:false,onFocus,onStatus})):
+        h('p',{style:{fontSize:12,color:'var(--text3)',padding:'8px 0'}},'All deeds assigned')));
+}
+
+/* ══════════════════════════════════════════════════════
+   ONBOARDING
+══════════════════════════════════════════════════════ */
+function OnboardingModal({onComplete}){
+  const[step,setStep]=useState(1);
+  const[activeIds,setActiveIds]=useState(()=>DAILY.slice(0,12).map(t=>t.id));
+  const[focusIds,setFocusIds]=useState(()=>DAILY.slice(0,5).map(t=>t.id));
+
+  const toggleActive=id=>setActiveIds(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
+  const toggleFocus=id=>setFocusIds(p=>p.includes(id)?p.filter(x=>x!==id):p.length<8?[...p,id]:p);
+
+  const finish=()=>{
+    const deedStatus={};
+    DAILY.forEach(t=>{
+      if(activeIds.includes(t.id))deedStatus[t.id]='active';
+      else deedStatus[t.id]='plan_future';
+    });
+    onComplete({deedStatus,focusDeeds:focusIds.filter(id=>activeIds.includes(id)),onboarded:true});
+  };
+
+  return h('div',{className:'overlay',style:{zIndex:300,alignItems:'flex-end',padding:0}},
+    h('div',{style:{background:'var(--card)',borderRadius:'24px 24px 0 0',padding:'24px 20px',maxWidth:430,width:'100%',maxHeight:'85svh',overflowY:'auto',textAlign:'left'}},
+      h('div',{style:{textAlign:'center',marginBottom:16}},
+        h('div',{style:{fontSize:40,marginBottom:8}},step===1?'🤲':'⭐'),
+        h('h2',{style:{fontSize:20,fontWeight:800}},step===1?'Pick Your Core Deeds':'Star Your Focus'),
+        h('p',{style:{fontSize:12,color:'var(--text3)',marginTop:4}},
+          step===1?'Select deeds you are currently doing daily (12 weekly goals pre-selected)':'Choose 3–5 deeds for short-run focus')),
+
+      step===1
+        ? DAILY.map(t=>h('div',{key:t.id,className:'onboard-deed'+(activeIds.includes(t.id)?' sel':''),
+          onClick:()=>toggleActive(t.id)},
+          h('div',{className:'cb'+(activeIds.includes(t.id)?' done':'')},activeIds.includes(t.id)&&h(I.Check,{s:12})),
+          h('div',{style:{flex:1}},
+            h('span',{style:{fontSize:13,marginRight:6}},t.icon),
+            h('span',{style:{fontSize:12}},t.text.length>70?t.text.slice(0,70)+'…':t.text))))
+        : activeIds.map(id=>{
+          const t=DAILY.find(x=>x.id===id);
+          if(!t)return null;
+          return h('div',{key:t.id,className:'onboard-deed'+(focusIds.includes(t.id)?' focus-sel':''),
+            onClick:()=>toggleFocus(t.id)},
+            h('span',{style:{fontSize:18,color:focusIds.includes(t.id)?'var(--gold)':'var(--text3)'}},focusIds.includes(t.id)?'★':'☆'),
+            h('div',{style:{flex:1}},
+              h('span',{style:{fontSize:13,marginRight:6}},t.icon),
+              h('span',{style:{fontSize:12}},t.text.length>70?t.text.slice(0,70)+'…':t.text)));
+        }),
+
+      h('div',{style:{display:'flex',gap:10,marginTop:20}},
+        step===2&&h('button',{onClick:()=>setStep(1),style:{flex:1,padding:'12px',borderRadius:12,border:'1px solid var(--border)',background:'var(--card2)',color:'var(--text)',fontWeight:700,cursor:'pointer'}},'Back'),
+        h('button',{onClick:()=>step===1?setStep(2):finish(),
+          style:{flex:2,padding:'12px',borderRadius:12,border:'none',background:'var(--green)',color:'#fff',fontWeight:800,cursor:'pointer',fontSize:14}},
+          step===1?'Next: Set Focus →':'Start My Journey'))));
+}
+
+/* ══════════════════════════════════════════════════════
    SETTINGS SCREEN
 ══════════════════════════════════════════════════════ */
-function SettingsScreen({state,onTheme,onNotif}){
+function SettingsScreen({state,onTheme,onNotif,onResetFocus,onResetOnboard}){
   const byG={};
   DAILY.forEach(t=>{if(!byG[t.g])byG[t.g]=[];byG[t.g].push(t);});
+  const topStreak=Object.entries(state.deedStreaks||{}).sort((a,b)=>b[1]-a[1])[0];
+  const topDeed=topStreak?DAILY.find(t=>t.id===topStreak[0]):null;
 
   return h('div',{style:{overflowY:'auto',height:'100%',padding:'20px 16px',paddingBottom:'var(--nav-h)'}},
     h('h2',{style:{fontSize:20,fontWeight:800,marginBottom:18,letterSpacing:'-.3px'}},'Settings'),
+
+    h('p',{className:'sec-title'},'Hasanat Rewards'),
+    h('div',{style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,padding:'16px',marginBottom:20}},
+      h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}},
+        [{e:'🤲',v:state.hasanat||0,l:'Total',c:'var(--gold)'},{e:'✨',v:state.hasanatToday||0,l:'Today',c:'var(--green)'},{e:'🔥',v:topStreak?topStreak[1]:0,l:'Top Streak',c:'#10b981'}]
+          .map(({e,v,l,c})=>h('div',{key:l,style:{textAlign:'center'}},
+            h('div',{style:{fontSize:20,marginBottom:2}},e),
+            h('div',{style:{fontSize:20,fontWeight:800,color:c}},v),
+            h('div',{style:{fontSize:10,color:'var(--text3)',textTransform:'uppercase',fontWeight:600,letterSpacing:'.05em'}},l)))),
+      topDeed&&h('p',{style:{fontSize:11,color:'var(--text3)',marginTop:12,textAlign:'center'}},
+        'Longest deed streak: '+topDeed.icon+' #'+topDeed.n+' ('+topStreak[1]+' days)')),
+
+    h('p',{className:'sec-title'},'Focus & Deeds'),
+    h('div',{style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,overflow:'hidden',marginBottom:20}},
+      h('button',{onClick:onResetFocus,style:{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 16px',background:'transparent',border:'none',borderBottom:'1px solid var(--border)',cursor:'pointer',color:'var(--text)'}},
+        h('div',{style:{textAlign:'left'}},
+          h('p',{style:{fontSize:13,fontWeight:700}},'Clear Focus Stars'),
+          h('p',{style:{fontSize:11,color:'var(--text3)'}},(state.focusDeeds||[]).length+' deeds currently focused')),
+        h('span',{style:{fontSize:12,color:'var(--gold)',fontWeight:700}},'Reset')),
+      h('button',{onClick:onResetOnboard,style:{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 16px',background:'transparent',border:'none',cursor:'pointer',color:'var(--text)'}},
+        h('div',{style:{textAlign:'left'}},
+          h('p',{style:{fontSize:13,fontWeight:700}},'Re-run Setup'),
+          h('p',{style:{fontSize:11,color:'var(--text3)'}},'Pick active deeds and focus again')),
+        h('span',{style:{fontSize:12,color:'var(--green)',fontWeight:700}},'Start'))),
 
     /* Appearance */
     h('p',{className:'sec-title'},'Appearance'),
@@ -790,6 +1166,7 @@ function SettingsScreen({state,onTheme,onNotif}){
 const TABS=[
   {id:'home',label:'Home',Icon:I.Home},
   {id:'daily',label:'Daily',Icon:I.Sun},
+  {id:'mydeeds',label:'My Deeds',Icon:I.List},
   {id:'progress',label:'Progress',Icon:I.Chart},
   {id:'awards',label:'Awards',Icon:I.Trophy},
   {id:'settings',label:'Settings',Icon:I.Cog},
@@ -802,33 +1179,55 @@ function App(){
   const[state,setState]=useState(loadState);
   const[tab,setTab]=useState('home');
   const[celebrate,setCelebrate]=useState(false);
-  const prevCount=useRef(state.daily.length);
+  const[toast,setToast]=useState(null);
+  const prevRingDone=useRef(0);
 
-  /* theme */
   useEffect(()=>{
     document.documentElement.classList.toggle('light',state.theme==='light');
-    localStorage.setItem('na-v3',JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   },[state]);
 
-  /* celebrate on full completion */
+  const ringDeeds=getRingDeeds(state);
+  const ringIds=ringDeeds.map(t=>t.id);
+  const ringDone=state.daily.filter(id=>ringIds.includes(id)).length;
+  const focusDeedsList=getFocusDeeds(state);
+
   useEffect(()=>{
-    if(state.daily.length===56&&prevCount.current!==56){setCelebrate(true);setTimeout(()=>setCelebrate(false),4500);}
-    prevCount.current=state.daily.length;
-  },[state.daily.length]);
+    if(ringDeeds.length&&ringDone===ringDeeds.length&&prevRingDone.current!==ringDone){
+      setCelebrate(true);setTimeout(()=>setCelebrate(false),4500);
+    }
+    prevRingDone.current=ringDone;
+  },[ringDone,ringDeeds.length]);
 
   const toggleDaily=useCallback(id=>{
     setState(prev=>{
+      const task=DAILY.find(t=>t.id===id);
       const done=prev.daily.includes(id);
       const nd=done?prev.daily.filter(x=>x!==id):[...prev.daily,id];
+      let ns={...prev,daily:nd};
+      if(!done&&task){
+        const award=awardHasanat(prev,id,task);
+        ns={...ns,hasanat:award.hasanat,hasanatToday:award.hasanatToday,deedDayHist:award.deedDayHist,deedStreaks:award.deedStreaks};
+        setToast(award._toast);
+      }else if(done&&task){
+        const rev=revokeHasanat(prev,id,task);
+        ns={...ns,...rev};
+      }
       const wid='w'+id.slice(1);
-      const nw={...prev.weekly};
-      if(WEEKLY.find(t=>t.id===wid)){nw[wid]=done?Math.max(0,(nw[wid]||0)-1):Math.min(7,(nw[wid]||0)+1);}
-      const nh=[...new Set([...prev.streakHist,TODAY])];
-      const ns2=calcStreak(nh);
-      const allDone=nd.length===56;
-      const nf=allDone&&!prev.fullHist.includes(TODAY)?[...prev.fullHist,TODAY]:prev.fullHist;
-      const ns={...prev,daily:nd,weekly:nw,streakHist:nh,streak:ns2,fullHist:nf};
-      ns.badges=checkBadges(ns);return ns;
+      const nw={...ns.weekly};
+      if(WEEKLY.find(t=>t.id===wid)&&getDeedStatus(id,prev)==='active'){
+        nw[wid]=done?Math.max(0,(nw[wid]||0)-1):Math.min(7,(nw[wid]||0)+1);
+      }
+      ns.weekly=nw;
+      ns.streakHist=[...new Set([...(ns.streakHist||[]),TODAY])];
+      ns.streak=calcStreak(ns.streakHist||[]);
+      const activeIds=getActiveDeeds(ns).map(t=>t.id);
+      const allActiveDone=activeIds.length&&activeIds.every(aid=>nd.includes(aid));
+      ns.fullHist=allActiveDone&&!prev.fullHist.includes(TODAY)?[...prev.fullHist,TODAY]:
+        !allActiveDone?prev.fullHist.filter(d=>d!==TODAY):prev.fullHist;
+      ns=updateFocusAndCategoryHist(ns);
+      ns.badges=checkBadges(ns);
+      return ns;
     });
   },[]);
 
@@ -836,23 +1235,42 @@ function App(){
   const toggleLifetime=useCallback(id=>{setState(prev=>{const d=prev.lifetime.includes(id);const ns={...prev,lifetime:d?prev.lifetime.filter(x=>x!==id):[...prev.lifetime,id]};ns.badges=checkBadges(ns);return ns;});},[]);
   const toggleNotif=useCallback(id=>{setState(prev=>({...prev,notifs:prev.notifs.includes(id)?prev.notifs.filter(x=>x!==id):[...prev.notifs,id]}));},[]);
   const toggleTheme=useCallback(()=>{setState(prev=>({...prev,theme:prev.theme==='dark'?'light':'dark'}));},[]);
+  const toggleFocus=useCallback(id=>{
+    setState(prev=>{
+      const has=(prev.focusDeeds||[]).includes(id);
+      const status=getDeedStatus(id,prev);
+      if(status==='plan_future')return prev;
+      const focusDeeds=has?(prev.focusDeeds||[]).filter(x=>x!==id):[...(prev.focusDeeds||[]),id];
+      let ns={...prev,focusDeeds};
+      ns=updateFocusAndCategoryHist(ns);
+      ns.badges=checkBadges(ns);
+      return ns;
+    });
+  },[]);
+  const setDeedStatus=useCallback((id,newStatus)=>{setState(prev=>promoteDeed(prev,id,newStatus));},[]);
+  const completeOnboard=useCallback(data=>{setState(prev=>({...prev,...data,badges:checkBadges({...prev,...data})}));},[]);
+  const resetFocus=useCallback(()=>{setState(prev=>{let ns={...prev,focusDeeds:[]};ns=updateFocusAndCategoryHist(ns);ns.badges=checkBadges(ns);return ns;});},[]);
+  const resetOnboard=useCallback(()=>{setState(prev=>({...prev,onboarded:false,deedStatus:{},focusDeeds:[]}));},[]);
+  const clearToast=useCallback(()=>setToast(null),[]);
 
-  const dPct=Math.round(state.daily.length/56*100);
+  const dTotal=ringDeeds.length||1;
+  const dPct=Math.round(ringDone/dTotal*100);
   const wPassed=WEEKLY.filter(t=>(state.weekly[t.id]||0)>=5).length;
   const wPct=Math.round(wPassed/12*100);
   const mPct=Math.round(state.monthly.length/4*100);
   const stars=dPct>=90?5:dPct>=70?4:dPct>=50?3:dPct>=30?2:dPct>0?1:0;
+  const focusCount=focusDeedsList.length;
 
   return h('div',{id:'app',style:{display:'flex',flexDirection:'column',height:'100svh',background:'var(--bg)',maxWidth:430,margin:'0 auto',position:'relative',overflow:'hidden'}},
 
     h('main',{style:{flex:1,overflow:'hidden',position:'relative'}},
-      tab==='home'&&h(HomeScreen,{state,dPct,wPct,mPct,stars,dCount:state.daily.length,wCount:wPassed}),
-      tab==='daily'&&h(DailyScreen,{state,onToggle:toggleDaily,onNotif:toggleNotif}),
+      tab==='home'&&h(HomeScreen,{state,dPct,wPct,mPct,stars,dCount:ringDone,dTotal,focusCount,wCount:wPassed,onToggle:toggleDaily}),
+      tab==='daily'&&h(DailyScreen,{state,onToggle:toggleDaily,onNotif:toggleNotif,onFocus:toggleFocus}),
+      tab==='mydeeds'&&h(MyDeedsScreen,{state,onFocus:toggleFocus,onStatus:setDeedStatus}),
       tab==='progress'&&h(ProgressScreen,{state,onMonthly:toggleMonthly,onLifetime:toggleLifetime}),
       tab==='awards'&&h(AwardsScreen,{state}),
-      tab==='settings'&&h(SettingsScreen,{state,onTheme:toggleTheme,onNotif:toggleNotif})),
+      tab==='settings'&&h(SettingsScreen,{state,onTheme:toggleTheme,onNotif:toggleNotif,onResetFocus:resetFocus,onResetOnboard:resetOnboard})),
 
-    /* Bottom Nav */
     h('nav',{className:'nav'},
       h('div',{className:'nav-inner'},
         TABS.map(({id,label,Icon})=>{
@@ -861,20 +1279,20 @@ function App(){
             h('div',{style:{position:'relative',lineHeight:0}},
               active&&h('div',{className:'nav-pill'}),
               h(Icon)),
-            h('span',{style:{fontSize:10,fontWeight:active?700:500,marginTop:1}},label));
+            h('span',{style:{fontSize:9,fontWeight:active?700:500,marginTop:1}},label));
         }))),
 
-    /* Confetti & Celebration */
+    h(HasanatToast,{toast,onDone:clearToast}),
     h(Confetti,{show:celebrate}),
     celebrate&&h('div',{className:'overlay',onClick:()=>setCelebrate(false)},
       h('div',{className:'modal-card celebrate-in'},
         h('div',{style:{fontSize:52,marginBottom:10}},'🎉'),
-        h('h3',{style:{fontSize:20,fontWeight:900,color:'var(--green)',marginBottom:6}},
-          'All Daily Tasks Complete!'),
+        h('h3',{style:{fontSize:20,fontWeight:900,color:'var(--green)',marginBottom:6}},'All Focus Deeds Complete!'),
         h('p',{style:{fontSize:13,color:'var(--text3)',marginBottom:10}},'MashAllah! Truly a blessed day.'),
         h('p',{style:{fontSize:15,fontFamily:'Georgia,serif',direction:'rtl',color:'var(--text3)'}},'جَزَاكَ اللّٰهُ خَيْرًا'),
-        h('div',{style:{marginTop:16,padding:'8px 16px',borderRadius:10,background:'rgba(34,197,94,.1)',border:'1px solid rgba(34,197,94,.2)',display:'inline-block'}}),
-        h('p',{style:{fontSize:11,color:'var(--text3)',marginTop:14}},'Tap anywhere to close'))));
+        h('p',{style:{fontSize:11,color:'var(--text3)',marginTop:14}},'Tap anywhere to close'))),
+
+    !state.onboarded&&h(OnboardingModal,{onComplete:completeOnboard}));
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(h(App));
